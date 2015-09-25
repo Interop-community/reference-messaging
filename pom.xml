@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.hspconsortium</groupId>
+    <artifactId>hsp-messaging-webapp</artifactId>
+    <version>0.9-SNAPSHOT</version>
+    <packaging>war</packaging>
+
+    <name>Reference Messaging</name>
+    <description>Artifacts for creating an HSPC messaging web app</description>
+    <url>https://healthservices.atlassian.net/wiki/display/HSPC/Healthcare+Services+Platform+Consortium</url>
+
+    <properties>
+        <version.org.apache.camel>2.14.0</version.org.apache.camel>
+        <!--<version.org.springframework>3.2.12.RELEASE</version.org.springframework>-->
+        <version.org.springframework>4.1.7.RELEASE</version.org.springframework>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.kie</groupId>
+            <artifactId>drools-camel-server-example</artifactId>
+            <version>6.2.0.Final</version>
+            <type>war</type>
+        </dependency>
+        <dependency>
+            <groupId>org.kie</groupId>
+            <artifactId>kie-camel</artifactId>
+            <version>6.2.0.Final</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-core</artifactId>
+            <version>${version.org.apache.camel}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>${version.org.springframework}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>hsp-reference-messaging</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <configuration>
+                    <overlays>
+                        <overlay>
+                            <groupId>org.kie</groupId>
+                            <artifactId>drools-camel-server-example</artifactId>
+                        </overlay>
+                    </overlays>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
