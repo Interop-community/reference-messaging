@@ -1,13 +1,15 @@
 package org.hspconsortium.platform.messaging.model;
 
+import ca.uhn.fhir.model.api.IResource;
+
 import java.util.Date;
 
-public class Container {
+public abstract class ResourceContainer {
     protected Date now;
     private String routeChannel;
     private String processingMessage;
 
-    public Container() {
+    public ResourceContainer() {
         now = new Date();
     }
 
@@ -30,4 +32,6 @@ public class Container {
     public void setProcessingMessage(String processingMessage) {
         this.processingMessage = processingMessage;
     }
+
+    public abstract IResource getResource();
 }

@@ -44,7 +44,7 @@ public class SubscriptionController {
         StringBuffer stringBuffer = new StringBuffer();
         stringBuffer.append("package org.hspconsortium.platform.messaging\n");
         stringBuffer.append("dialect \"mvel\"\n");
-        stringBuffer.append("import org.hspconsortium.platform.messaging.model.Container\n");
+        stringBuffer.append("import org.hspconsortium.platform.messaging.model.ResourceContainer\n");
         stringBuffer.append("import org.hspconsortium.platform.messaging.model.ObservationContainer\n");
         stringBuffer.append("rule \"Subscription rule: "  + subscription.getId().getIdPart() + "\"\n");
         stringBuffer.append("    when\n");

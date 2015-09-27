@@ -11,6 +11,7 @@
 
     <groupId>org.hspconsortium</groupId>
     <artifactId>hsp-reference-messaging</artifactId>
+    <packaging>war</packaging>
     <version>0.1-SNAPSHOT</version>
 
     <properties>
@@ -24,6 +25,20 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-tomcat</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-tomcat</artifactId>
+            <!-- this tells SpringBoot to target an external container (tomcat)
+                 but prevents it from running as an executable WAR -->
+            <scope>provided</scope>
         </dependency>
 
         <!-- FHIR DSTU2 Structures Jar -->
@@ -83,6 +98,7 @@
     </dependencies>
 
     <build>
+        <finalName>hsp-reference-messaging</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
