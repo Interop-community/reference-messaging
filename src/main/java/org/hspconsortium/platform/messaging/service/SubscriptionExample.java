@@ -1,6 +1,6 @@
 //package org.hspconsortium.platform.messaging.service;
 //
-//import org.hspconsortium.platform.messaging.example.SubscriptionContainer;
+//import org.hspconsortium.platform.messaging.model.SubscriptionContainer;
 //import org.kie.api.io.ResourceType;
 //import org.kie.internal.KnowledgeBase;
 //import org.kie.internal.KnowledgeBaseFactory;

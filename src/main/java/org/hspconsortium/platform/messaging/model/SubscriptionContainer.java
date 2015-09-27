@@ -1,4 +1,4 @@
-package org.hspconsortium.platform.messaging.example;
+package org.hspconsortium.platform.messaging.model;
 
 public class SubscriptionContainer {
 
