@@ -3,59 +3,101 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.hspconsortium</groupId>
-    <artifactId>hsp-messaging-webapp</artifactId>
-    <version>0.9-SNAPSHOT</version>
-    <packaging>war</packaging>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>1.2.6.RELEASE</version>
+    </parent>
 
-    <name>Reference Messaging</name>
-    <description>Artifacts for creating an HSPC messaging web app</description>
-    <url>https://healthservices.atlassian.net/wiki/display/HSPC/Healthcare+Services+Platform+Consortium</url>
+    <groupId>org.hspconsortium</groupId>
+    <artifactId>hsp-reference-messaging</artifactId>
+    <version>0.1-SNAPSHOT</version>
 
     <properties>
-        <version.org.apache.camel>2.14.0</version.org.apache.camel>
-        <!--<version.org.springframework>3.2.12.RELEASE</version.org.springframework>-->
-        <version.org.springframework>4.1.7.RELEASE</version.org.springframework>
+        <java.version>1.7</java.version>
+        <hapi.version>1.2</hapi.version>
+        <drools.version>6.2.0.Final</drools.version>
+        <javax.inject.version>1</javax.inject.version>
     </properties>
 
     <dependencies>
         <dependency>
-            <groupId>org.kie</groupId>
-            <artifactId>drools-camel-server-example</artifactId>
-            <version>6.2.0.Final</version>
-            <type>war</type>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
+
+        <!-- FHIR DSTU2 Structures Jar -->
+        <dependency>
+            <groupId>ca.uhn.hapi.fhir</groupId>
+            <artifactId>hapi-fhir-structures-dstu2</artifactId>
+            <version>${hapi.version}</version>
+        </dependency>
+
+        <!-- tag::actuator[] -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <!-- end::actuator[] -->
+        <!-- tag::tests[] -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- end::tests[] -->
+
+        <!-- Internal dependencies -->
         <dependency>
             <groupId>org.kie</groupId>
-            <artifactId>kie-camel</artifactId>
-            <version>6.2.0.Final</version>
+            <artifactId>kie-api</artifactId>
+            <version>${drools.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.camel</groupId>
-            <artifactId>camel-core</artifactId>
-            <version>${version.org.apache.camel}</version>
+            <groupId>org.drools</groupId>
+            <artifactId>drools-core</artifactId>
+            <version>${drools.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context</artifactId>
-            <version>${version.org.springframework}</version>
+            <groupId>org.drools</groupId>
+            <artifactId>drools-compiler</artifactId>
+            <version>${drools.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.drools</groupId>
+            <artifactId>drools-simulator</artifactId>
+            <version>${drools.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jbpm</groupId>
+            <artifactId>jbpm-flow-builder</artifactId>
+            <version>${drools.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.inject</groupId>
+            <artifactId>javax.inject</artifactId>
+            <version>${javax.inject.version}</version>
+        </dependency>
+
     </dependencies>
 
     <build>
-        <finalName>hsp-reference-messaging</finalName>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
-                <configuration>
-                    <overlays>
-                        <overlay>
-                            <groupId>org.kie</groupId>
-                            <artifactId>drools-camel-server-example</artifactId>
-                        </overlay>
-                    </overlays>
-                </configuration>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
