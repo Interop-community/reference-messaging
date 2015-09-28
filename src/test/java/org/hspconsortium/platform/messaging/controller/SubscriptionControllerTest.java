@@ -35,13 +35,6 @@ public class SubscriptionControllerTest {
     }
 
     @Test
-    public void helloTest() throws Exception {
-        mvc.perform(MockMvcRequestBuilders.get("/subscription").accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().string(equalTo("Hello from " + SubscriptionController.class.getSimpleName())));
-    }
-
-    @Test
     @Ignore
     public void subscriptionTest() throws Exception {
         Subscription subscription = new Subscription();

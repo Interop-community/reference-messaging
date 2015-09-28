@@ -11,6 +11,8 @@ import org.kie.internal.builder.KnowledgeBuilderError;
 import org.kie.internal.builder.KnowledgeBuilderErrors;
 import org.kie.internal.builder.KnowledgeBuilderFactory;
 import org.kie.internal.io.ResourceFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -22,26 +24,22 @@ import java.io.ByteArrayInputStream;
 @RestController
 @RequestMapping(value = "subscription")
 public class SubscriptionController {
+    private static final Logger logger = LoggerFactory.getLogger(SubscriptionController.class);
+
     private IParser jsonParser = FhirContext.forDstu2().newJsonParser();
 
     @Inject
     KnowledgeBase knowledgeBase;
 
-    @RequestMapping(method = RequestMethod.GET)
-    public String hello() {
-        return "Hello from " + this.getClass().getSimpleName();
-    }
-
     @RequestMapping(method = RequestMethod.POST)
     public String subscription(@RequestBody String jsonSubscription) {
         Validate.notNull(jsonSubscription);
 
+        logger.info("Received subscription for registration: " + jsonSubscription);
+
         Subscription subscription = (Subscription) jsonParser.parseResource(jsonSubscription);
 
         // create a drl based on the subscription
-
-
-
         // todo continue to fill out this dynamic drl
         StringBuffer stringBuffer = new StringBuffer();
         stringBuffer.append("package org.hspconsortium.platform.messaging\n");
@@ -80,6 +78,8 @@ public class SubscriptionController {
 
         // add this rule to the commonly shared knowledge base
         knowledgeBase.addKnowledgePackages(kbuilder.getKnowledgePackages());
+
+        logger.info("Subscription registration successful");
 
         // submit the subscription into the knowledge session
         return "Success";

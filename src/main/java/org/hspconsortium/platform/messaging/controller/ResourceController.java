@@ -16,6 +16,8 @@ import org.hspconsortium.platform.messaging.model.ObservationContainer;
 import org.hspconsortium.platform.messaging.model.ResourceContainer;
 import org.kie.internal.KnowledgeBase;
 import org.kie.internal.runtime.StatefulKnowledgeSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -27,6 +29,8 @@ import java.io.IOException;
 @RestController
 @RequestMapping(value = "resource")
 public class ResourceController {
+
+    private static final Logger logger = LoggerFactory.getLogger(ResourceController.class);
 
     private IParser jsonParser = FhirContext.forDstu2().newJsonParser();
 
@@ -41,6 +45,9 @@ public class ResourceController {
     @RequestMapping(method = RequestMethod.POST)
     public String resource(@RequestBody String jsonResource) {
         Validate.notNull(jsonResource);
+
+        // create a drl based on the subscription
+        logger.info("Received subscription for registration: " + jsonResource);
 
         IResource resource = (IResource) jsonParser.parseResource(jsonResource);
         Validate.notNull(resource);
