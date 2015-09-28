@@ -2,6 +2,7 @@ package org.hspconsortium.platform.messaging.controller;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.model.dstu2.resource.Subscription;
+import ca.uhn.fhir.parser.IParser;
 import org.apache.commons.lang3.Validate;
 import org.kie.api.io.ResourceType;
 import org.kie.internal.KnowledgeBase;
@@ -21,6 +22,7 @@ import java.io.ByteArrayInputStream;
 @RestController
 @RequestMapping(value = "subscription")
 public class SubscriptionController {
+    private IParser jsonParser = FhirContext.forDstu2().newJsonParser();
 
     @Inject
     KnowledgeBase knowledgeBase;
@@ -34,7 +36,7 @@ public class SubscriptionController {
     public String subscription(@RequestBody String jsonSubscription) {
         Validate.notNull(jsonSubscription);
 
-        Subscription subscription = (Subscription) FhirContext.forDstu2().newJsonParser().parseResource(jsonSubscription);
+        Subscription subscription = (Subscription) jsonParser.parseResource(jsonSubscription);
 
         // create a drl based on the subscription
 

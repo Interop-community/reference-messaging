@@ -3,6 +3,7 @@ package org.hspconsortium.platform.messaging.controller;
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.resource.Observation;
+import ca.uhn.fhir.parser.IParser;
 import org.apache.commons.lang3.Validate;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -27,6 +28,8 @@ import java.io.IOException;
 @RequestMapping(value = "resource")
 public class ResourceController {
 
+    private IParser jsonParser = FhirContext.forDstu2().newJsonParser();
+
     @Inject
     KnowledgeBase knowledgeBase;
 
@@ -39,7 +42,7 @@ public class ResourceController {
     public String resource(@RequestBody String jsonResource) {
         Validate.notNull(jsonResource);
 
-        IResource resource = (IResource) FhirContext.forDstu2().newJsonParser().parseResource(jsonResource);
+        IResource resource = (IResource) jsonParser.parseResource(jsonResource);
         Validate.notNull(resource);
 
         StatefulKnowledgeSession ksession = knowledgeBase.newStatefulKnowledgeSession();
