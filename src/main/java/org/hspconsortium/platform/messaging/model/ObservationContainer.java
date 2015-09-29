@@ -12,7 +12,6 @@ public class ObservationContainer extends ResourceContainer implements Serializa
     public ObservationContainer(Observation observation) {
         super();
         this.observation = observation;
-        observation.getCode();
     }
 
     @Override
