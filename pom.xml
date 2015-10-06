@@ -9,6 +9,7 @@
         <version>1.2.6.RELEASE</version>
     </parent>
 
+    <name>Reference Messaging</name>
     <groupId>org.hspconsortium</groupId>
     <artifactId>hsp-reference-messaging</artifactId>
     <packaging>war</packaging>
