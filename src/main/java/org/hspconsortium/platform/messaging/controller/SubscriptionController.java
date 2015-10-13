@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.inject.Inject;
 
 @RestController
-@RequestMapping(value = "subscription")
+@RequestMapping(value = "/subscription")
 public class SubscriptionController {
     private static final Logger logger = LoggerFactory.getLogger(SubscriptionController.class);
 
@@ -23,6 +23,11 @@ public class SubscriptionController {
 
     @Inject
     SubscriptionManagerService subscriptionManagerService;
+
+    @RequestMapping(value = "/health", method = RequestMethod.GET)
+    public String health() {
+        return "Ok";
+    }
 
     @RequestMapping(method = RequestMethod.POST)
     public String subscription(@RequestBody String jsonSubscription) {

@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.inject.Inject;
 
 @RestController
-@RequestMapping(value = "resource")
+@RequestMapping(value = "/resource")
 public class ResourceController {
 
     private static final Logger logger = LoggerFactory.getLogger(ResourceController.class);
@@ -25,9 +25,9 @@ public class ResourceController {
     @Inject
     SubscriptionManagerService subscriptionManagerService;
 
-    @RequestMapping(method = RequestMethod.GET)
-    public String hello() {
-        return "Hello from " + this.getClass().getSimpleName();
+    @RequestMapping(value = "/health", method = RequestMethod.GET)
+    public String health() {
+        return "Ok";
     }
 
     @RequestMapping(method = RequestMethod.POST)
