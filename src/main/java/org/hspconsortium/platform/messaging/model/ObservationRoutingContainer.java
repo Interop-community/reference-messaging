@@ -5,11 +5,11 @@ import ca.uhn.fhir.model.dstu2.resource.Observation;
 
 import java.io.Serializable;
 
-public class ObservationContainer extends ResourceContainer implements Serializable {
+public class ObservationRoutingContainer extends ResourceRoutingContainer implements Serializable {
 
     private Observation observation;
 
-    public ObservationContainer(Observation observation) {
+    public ObservationRoutingContainer(Observation observation) {
         super();
         this.observation = observation;
     }

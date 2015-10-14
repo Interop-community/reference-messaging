@@ -1,20 +1,19 @@
 package org.hspconsortium.platform.messaging.model;
 
 import ca.uhn.fhir.model.api.IResource;
-import ca.uhn.fhir.model.dstu2.resource.Observation;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
 import org.apache.commons.lang3.Validate;
 
 import java.io.Serializable;
 import java.util.Date;
 
-public class PatientContainer extends ResourceContainer implements Serializable {
+public class PatientRoutingContainer extends ResourceRoutingContainer implements Serializable {
 
     private Patient patient;
 
     private long ageInMillis;
 
-    public PatientContainer(Patient patient) {
+    public PatientRoutingContainer(Patient patient) {
         super();
         this.patient = patient;
 

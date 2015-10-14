@@ -12,9 +12,9 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.hspconsortium.platform.messaging.drools.factory.RuleFromSubscriptionFactory;
-import org.hspconsortium.platform.messaging.model.ObservationContainer;
-import org.hspconsortium.platform.messaging.model.PatientContainer;
-import org.hspconsortium.platform.messaging.model.ResourceContainer;
+import org.hspconsortium.platform.messaging.model.ObservationRoutingContainer;
+import org.hspconsortium.platform.messaging.model.PatientRoutingContainer;
+import org.hspconsortium.platform.messaging.model.ResourceRoutingContainer;
 import org.hspconsortium.platform.messaging.service.SubscriptionManagerService;
 import org.kie.api.io.ResourceType;
 import org.kie.internal.KnowledgeBase;
@@ -76,52 +76,53 @@ public class DroolsSubscriptionManagerService implements SubscriptionManagerServ
 
     @Override
     public String submitResource(IResource resource) {
-        ResourceContainer resourceContainer;
+        ResourceRoutingContainer resourceRoutingContainer;
         if (resource instanceof Observation) {
-            resourceContainer = new ObservationContainer((Observation) resource);
+            resourceRoutingContainer = new ObservationRoutingContainer((Observation) resource);
         } else if (resource instanceof Patient) {
-            resourceContainer = new PatientContainer((Patient) resource);
+            resourceRoutingContainer = new PatientRoutingContainer((Patient) resource);
         } else {
             return "Nothing to do";
         }
 
         StatefulKnowledgeSession knowledgeSession = knowledgeBase.newStatefulKnowledgeSession();
-        knowledgeSession.insert(resourceContainer);
+        knowledgeSession.insert(resourceRoutingContainer);
         knowledgeSession.fireAllRules();
 
         // todo need to process if the resource matched a rule and was assigned a route
         // process by posting the idPart to the route output
         System.out.println("Resource: " + resource.getId()
-                + " Processing Message: " + resourceContainer.getProcessingMessage()
-                + " Route: " + resourceContainer.getRouteChannel());
+                + " Route: " + resourceRoutingContainer.getDestinationChannels());
 
         // if the container has been assigned a route, send the message now
-        if (resourceContainer.getRouteChannel() != null) {
-            sendSubscriptionMessage(resourceContainer);
+        if (resourceRoutingContainer.getDestinationChannels() != null) {
+            sendSubscriptionMessage(resourceRoutingContainer);
         }
 
         return "Success";
     }
 
     // replace this with camel route
-    private void sendSubscriptionMessage(ResourceContainer resourceContainer) {
-        try {
-            HttpPost postRequest = new HttpPost(resourceContainer.getRouteChannel());
-            StringEntity resourceIdEntity = new StringEntity(resourceContainer.getResource().getId().toString());
-            postRequest.setEntity(resourceIdEntity);
+    private void sendSubscriptionMessage(ResourceRoutingContainer resourceRoutingContainer) {
+        for (String destinationChannel : resourceRoutingContainer.getDestinationChannels()) {
+            try {
+                HttpPost postRequest = new HttpPost(destinationChannel);
+                StringEntity resourceIdEntity = new StringEntity(resourceRoutingContainer.getResource().getId().toString());
+                postRequest.setEntity(resourceIdEntity);
 
-            CloseableHttpClient httpClient = HttpClients.custom().build();
-            CloseableHttpResponse closeableHttpResponse = httpClient.execute(postRequest);
-            if (closeableHttpResponse.getStatusLine().getStatusCode() != 200) {
-                HttpEntity rEntity = closeableHttpResponse.getEntity();
-                String responseString = EntityUtils.toString(rEntity, "UTF-8");
-                throw new RuntimeException(
-                        "Error sending the subscription message to: " + resourceContainer.getRouteChannel()
-                                + " Response Status : " + closeableHttpResponse.getStatusLine()
-                                + " Response Detail: " + responseString);
+                CloseableHttpClient httpClient = HttpClients.custom().build();
+                CloseableHttpResponse closeableHttpResponse = httpClient.execute(postRequest);
+                if (closeableHttpResponse.getStatusLine().getStatusCode() != 200) {
+                    HttpEntity rEntity = closeableHttpResponse.getEntity();
+                    String responseString = EntityUtils.toString(rEntity, "UTF-8");
+                    throw new RuntimeException(
+                            "Error sending the subscription message to: " + resourceRoutingContainer.getDestinationChannels()
+                                    + " Response Status : " + closeableHttpResponse.getStatusLine()
+                                    + " Response Detail: " + responseString);
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
     }
 }

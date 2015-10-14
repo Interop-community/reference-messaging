@@ -43,14 +43,13 @@ public class RuleFromSubscriptionFactory {
         StringBuffer stringBuffer = new StringBuffer();
         stringBuffer.append("package org.hspconsortium.platform.messaging\n");
         stringBuffer.append("dialect \"mvel\"\n");
-        stringBuffer.append("import org.hspconsortium.platform.messaging.model.ResourceContainer\n");
-        stringBuffer.append("import org.hspconsortium.platform.messaging.model.PatientContainer\n");
+        stringBuffer.append("import org.hspconsortium.platform.messaging.model.ResourceRoutingContainer\n");
+        stringBuffer.append("import org.hspconsortium.platform.messaging.model.PatientRoutingContainer\n");
         stringBuffer.append("rule \"Subscription rule: " + subscription.getId().getIdPart() + "\"\n");
         stringBuffer.append("    when\n");
-        stringBuffer.append("        $c: PatientContainer()");
+        stringBuffer.append("        $c: PatientRoutingContainer()");
         stringBuffer.append("    then\n");
-        stringBuffer.append("        $c.setProcessingMessage(\"Matched!\");\n");
-        stringBuffer.append("        $c.setRouteChannel(\"" + subscription.getChannel().getEndpoint() + "\");\n");
+        stringBuffer.append("        $c.addDestinationChannel(\"" + subscription.getChannel().getEndpoint() + "\");\n");
         stringBuffer.append("end\n");
         return stringBuffer.toString();
     }
@@ -63,11 +62,11 @@ public class RuleFromSubscriptionFactory {
         StringBuffer stringBuffer = new StringBuffer();
         stringBuffer.append("package org.hspconsortium.platform.messaging\n");
         stringBuffer.append("dialect \"mvel\"\n");
-        stringBuffer.append("import org.hspconsortium.platform.messaging.model.ResourceContainer\n");
-        stringBuffer.append("import org.hspconsortium.platform.messaging.model.ObservationContainer\n");
+        stringBuffer.append("import org.hspconsortium.platform.messaging.model.ResourceRoutingContainer\n");
+        stringBuffer.append("import org.hspconsortium.platform.messaging.model.ObservationRoutingContainer\n");
         stringBuffer.append("rule \"Subscription rule: " + subscription.getId().getIdPart() + "\"\n");
         stringBuffer.append("    when\n");
-        stringBuffer.append("        $c: ObservationContainer(\n");
+        stringBuffer.append("        $c: ObservationRoutingContainer(\n");
         // todo this hard-coding is just for the demo
         if (codeOption != null) {
             stringBuffer.append("              getObservation().getCode() != null\n");
@@ -76,8 +75,7 @@ public class RuleFromSubscriptionFactory {
         }
         stringBuffer.append("            )\n");
         stringBuffer.append("    then\n");
-        stringBuffer.append("        $c.setProcessingMessage(\"Matched!\");\n");
-        stringBuffer.append("        $c.setRouteChannel(\"" + subscription.getChannel().getEndpoint() + "\");\n");
+        stringBuffer.append("        $c.addDestinationChannel(\"" + subscription.getChannel().getEndpoint() + "\");\n");
         stringBuffer.append("end\n");
         return stringBuffer.toString();
     }

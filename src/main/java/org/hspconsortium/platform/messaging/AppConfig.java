@@ -25,7 +25,7 @@ public class AppConfig {
     Environment env;
 
     @Bean
-    public Queue helloJMSQueue() {
+    public Queue resourceJMSQueue() {
         return new ActiveMQQueue(PROCESS_RESOURCE_QUEUE);
     }
 

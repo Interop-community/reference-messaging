@@ -29,7 +29,7 @@ public class ManagementControllerTest {
 	}
 
 	@Test
-	public void getHello() throws Exception {
+	public void getHealth() throws Exception {
 		mvc.perform(MockMvcRequestBuilders.get("/health").accept(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk())
 				.andExpect(content().string(equalTo("Ok")));
