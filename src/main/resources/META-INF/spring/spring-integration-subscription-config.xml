@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:int="http://www.springframework.org/schema/integration"
+       xmlns:int-http="http://www.springframework.org/schema/integration/http"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
+            http://www.springframework.org/schema/integration/http http://www.springframework.org/schema/integration/http/spring-integration-http.xsd">
+
+    <!-- HTTP Subscription Health -->
+    <int-http:inbound-gateway
+            request-channel="inboundSubscriptionHealthChannel"
+            path="/subscription/health"
+            supported-methods="GET"
+            />
+
+    <int:service-activator
+            id="subscriptionManagerServiceHealthActivator"
+            input-channel="inboundSubscriptionHealthChannel"
+            ref="subscriptionManagerService"
+            method="health"
+            />
+
+    <!-- Inbound HTTP Subscription Management -->
+    <int-http:inbound-gateway
+            request-channel="inboundSubscriptionRouterChannel"
+            reply-channel=""
+            path="/subscription"
+            supported-methods="GET,DELETE"
+            />
+
+    <int:router
+            input-channel="inboundSubscriptionRouterChannel"
+            expression="headers.http_requestMethod">
+        <int:mapping value="GET" channel="inboundSubscriptionAsStringChannel"/>
+        <int:mapping value="DELETE" channel="inboundSubscriptionResetChannel"/>
+    </int:router>
+
+    <int:service-activator
+            id="subscriptionManagerServiceAsStringActivator"
+            input-channel="inboundSubscriptionAsStringChannel"
+            ref="subscriptionManagerService"
+            method="asString"
+            />
+
+    <int:service-activator
+            id="subscriptionManagerServiceResetActivator"
+            input-channel="inboundSubscriptionResetChannel"
+            ref="subscriptionManagerService"
+            method="reset"
+            />
+
+    <int:channel id="inboundSubscriptionRegistrationChannel">
+        <int:interceptors>
+            <int:wire-tap channel="subscriptionRegistrationChannelLogger"/>
+        </int:interceptors>
+    </int:channel>
+
+    <int:logging-channel-adapter
+            id="subscriptionRegistrationChannelLogger"
+            level="INFO"
+            logger-name="SubscriptionRegistrationChannel"
+            log-full-message="true"
+            />
+
+    <int-http:inbound-gateway
+            request-channel="inboundSubscriptionRegistrationChannel"
+            reply-channel=""
+            path="/subscription"
+            supported-methods="POST"
+            request-payload-type="byte[]"
+            message-converters="converters"
+            merge-with-default-converters="false"
+            />
+
+    <int:service-activator
+            id="subscriptionManagerServiceRegisterSubscriptionActivator"
+            input-channel="inboundSubscriptionRegistrationChannel"
+            ref="subscriptionManagerService"
+            method="registerSubscription"
+            />
+
+</beans>

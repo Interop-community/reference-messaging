@@ -16,12 +16,14 @@ import org.hspconsortium.platform.messaging.model.ObservationRoutingContainer;
 import org.hspconsortium.platform.messaging.model.PatientRoutingContainer;
 import org.hspconsortium.platform.messaging.model.ResourceRoutingContainer;
 import org.hspconsortium.platform.messaging.service.SubscriptionManagerService;
+import org.kie.api.definition.rule.Rule;
 import org.kie.api.io.ResourceType;
 import org.kie.internal.KnowledgeBase;
 import org.kie.internal.builder.KnowledgeBuilder;
 import org.kie.internal.builder.KnowledgeBuilderError;
 import org.kie.internal.builder.KnowledgeBuilderErrors;
 import org.kie.internal.builder.KnowledgeBuilderFactory;
+import org.kie.internal.definition.KnowledgePackage;
 import org.kie.internal.io.ResourceFactory;
 import org.kie.internal.runtime.StatefulKnowledgeSession;
 import org.slf4j.Logger;
@@ -44,7 +46,28 @@ public class DroolsSubscriptionManagerService implements SubscriptionManagerServ
     KnowledgeBase knowledgeBase;
 
     @Override
-    public String registerSubscription(Subscription subscription) {
+    public String health() {
+        return knowledgeBase != null ? "OK" : "Not Initialized";
+    }
+
+    @Override
+    public String asString() {
+        StringBuffer packageBuffer = new StringBuffer("Packages: \n");
+        for (KnowledgePackage knowledgePackage : knowledgeBase.getKnowledgePackages()) {
+            packageBuffer.append(" - " + knowledgePackage.getName() + "\n");
+
+            if (!knowledgePackage.getRules().isEmpty()) {
+                packageBuffer.append("    Rules: \n");
+                for (Rule rule : knowledgePackage.getRules()) {
+                    packageBuffer.append("      - " + rule.getName() + " \n");
+                }
+            }
+        }
+        return packageBuffer.toString();
+    }
+
+    @Override
+    public void registerSubscription(Subscription subscription) {
         String strDrl = ruleFromSubscriptionFactory.create(subscription);
 
         KnowledgeBuilder kbuilder = KnowledgeBuilderFactory.newKnowledgeBuilder();
@@ -68,10 +91,6 @@ public class DroolsSubscriptionManagerService implements SubscriptionManagerServ
         knowledgeBase.addKnowledgePackages(kbuilder.getKnowledgePackages());
 
         logger.info("Subscription registration successful");
-
-        // submit the subscription into the knowledge session
-        return "Success";
-
     }
 
     @Override
@@ -100,6 +119,14 @@ public class DroolsSubscriptionManagerService implements SubscriptionManagerServ
         }
 
         return "Success";
+    }
+
+    @Override
+    public String reset() {
+        for (KnowledgePackage knowledgePackage : knowledgeBase.getKnowledgePackages()) {
+            knowledgeBase.removeKnowledgePackage(knowledgePackage.getName());
+        }
+        return "OK";
     }
 
     // replace this with camel route

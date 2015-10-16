@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:jms="http://www.springframework.org/schema/integration/jms"
-       xmlns:integration="http://www.springframework.org/schema/integration"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/integration/jms http://www.springframework.org/schema/integration/jms/spring-integration-jms.xsd">
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
 
-    <jms:message-driven-channel-adapter id="resourceJMSAdapater" destination="resourceJMSQueue"
-                                        connection-factory="jmsConnectionFactory"  channel="resourceChannel"/>
+    <import resource="spring-integration-resource-config.xml"/>
+    <import resource="spring-integration-subscription-config.xml"/>
 
-    <integration:channel id="resourceChannel"/>
+    <!-- Custom Converter -->
+    <util:list id="converters">
+        <bean class="org.hspconsortium.platform.messaging.converter.HapiJsonHttpMessageConverter"/>
+    </util:list>
 
-    <integration:service-activator id="submitResourceServiceActivator" input-channel="resourceChannel"
-                                   ref="droolsSubscriptionAdapter" method="submitResource"/>
 </beans>
