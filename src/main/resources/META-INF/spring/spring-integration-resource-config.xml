@@ -23,7 +23,7 @@
     <!-- messaging channel to receive resources -->
     <int:channel id="resourceChannel">
         <int:interceptors>
-            <int:wire-tap channel="resourceChannelLogger"/>
+            <int:wire-tap id="resourceChannelWireTapLogger" channel="resourceChannelLogger"/>
         </int:interceptors>
     </int:channel>
 

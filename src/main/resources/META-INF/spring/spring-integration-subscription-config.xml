@@ -52,7 +52,7 @@
 
     <int:channel id="inboundSubscriptionRegistrationChannel">
         <int:interceptors>
-            <int:wire-tap channel="subscriptionRegistrationChannelLogger"/>
+            <int:wire-tap id="inboundSubscriptionRegistrationChannelWireTapLogger" channel="subscriptionRegistrationChannelLogger"/>
         </int:interceptors>
     </int:channel>
 

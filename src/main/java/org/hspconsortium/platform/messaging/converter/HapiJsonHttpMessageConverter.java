@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 
+// todo promote this to some common library
 public class HapiJsonHttpMessageConverter extends AbstractHttpMessageConverter<Object>
         implements GenericHttpMessageConverter<Object> {
 
