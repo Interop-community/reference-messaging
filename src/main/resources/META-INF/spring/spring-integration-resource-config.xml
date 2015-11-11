@@ -3,9 +3,11 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:jms="http://www.springframework.org/schema/integration/jms"
        xmlns:int="http://www.springframework.org/schema/integration"
+       xmlns:int-http="http://www.springframework.org/schema/integration/http"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
             http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
-            http://www.springframework.org/schema/integration/jms http://www.springframework.org/schema/integration/jms/spring-integration-jms.xsd">
+            http://www.springframework.org/schema/integration/jms http://www.springframework.org/schema/integration/jms/spring-integration-jms.xsd
+            http://www.springframework.org/schema/integration/http http://www.springframework.org/schema/integration/http/spring-integration-http.xsd">
 
     <!-- external queue for receiving resources to be processed by the messaging service -->
     <bean id="resourceJMSQueue" class="org.apache.activemq.command.ActiveMQQueue">
@@ -40,4 +42,43 @@
             logger-name="ResourceChannel"
             log-full-message="true"
             />
+
+    <!-- HTTP Resource Health (HTTP alternative to JMS above) -->
+    <int-http:inbound-gateway
+            request-channel="inboundResourceHealthChannel"
+            path="/resource/health"
+            supported-methods="GET"
+            />
+
+    <int:service-activator
+            id="resourceManagerServiceHealthActivator"
+            input-channel="inboundResourceHealthChannel"
+            ref="subscriptionManagerService"
+            method="health"
+            />
+
+    <int-http:inbound-gateway
+            request-channel="httpResourceChannel"
+            reply-channel=""
+            path="/resource"
+            supported-methods="POST"
+            request-payload-type="byte[]"
+            message-converters="converters"
+            merge-with-default-converters="false"
+            />
+
+    <int:service-activator
+            id="resourceManagerServiceProcessResourceActivator"
+            input-channel="httpResourceChannel"
+            ref="subscriptionManagerService"
+            method="submitResource"
+            />
+
+    <int:service-activator
+            id="submitResourceViaHTTPServiceActivator"
+            input-channel="httpResourceChannel"
+            ref="droolsSubscriptionAdapter"
+            method="submitResource"
+            />
+
 </beans>
