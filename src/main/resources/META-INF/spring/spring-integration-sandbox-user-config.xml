@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:int="http://www.springframework.org/schema/integration"
+       xmlns:int-http="http://www.springframework.org/schema/integration/http"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
+            http://www.springframework.org/schema/integration/http http://www.springframework.org/schema/integration/http/spring-integration-http.xsd">
+
+    <!-- HTTP Sandbox User Organization Registration Health -->
+    <int-http:inbound-gateway
+            request-channel="inboundSandboxUserHealthChannel"
+            path="/sandboxuser/health"
+            supported-methods="GET"
+            />
+
+    <int:service-activator
+            id="sandboxUserManagerServiceHealthActivator"
+            input-channel="inboundSandboxUserHealthChannel"
+            ref="sandboxUserRegistrationService"
+            method="health"
+            />
+
+    <!-- Inbound HTTP Sandbox User Organization Registration Management -->
+    <int:channel id="inboundSandboxUserRegistrationChannel">
+        <int:interceptors>
+            <int:wire-tap id="inboundSandboxUserRegistrationChannelWireTapLogger"
+                          channel="sandboxUserRegistrationChannelLogger"/>
+        </int:interceptors>
+    </int:channel>
+
+    <int:logging-channel-adapter
+            id="sandboxUserRegistrationChannelLogger"
+            level="INFO"
+            logger-name="SandboxUserRegistrationChannel"
+            log-full-message="true"
+            />
+
+    <int-http:inbound-gateway
+            request-channel="inboundSandboxUserRegistrationChannel"
+            reply-channel=""
+            path="/sandboxuser"
+            supported-methods="POST"
+            request-payload-type="byte[]"
+            />
+
+    <int:service-activator
+            id="sandboxUserOrganizationActivator"
+            input-channel="inboundSandboxUserRegistrationChannel"
+            ref="sandboxUserRegistrationService"
+            method="registerSandboxUserOrganization"
+            />
+
+</beans>
