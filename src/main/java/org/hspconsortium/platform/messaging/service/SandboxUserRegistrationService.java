@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hspconsortium.client.auth.credentials.Credentials;
 import org.hspconsortium.client.session.clientcredentials.ClientCredentialsSessionFactory;
 import org.hspconsortium.platform.messaging.model.SandboxUserInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -19,6 +21,9 @@ public interface SandboxUserRegistrationService {
 
     @Component
     class Impl implements SandboxUserRegistrationService {
+
+        private static final Logger logger = LoggerFactory.getLogger(SandboxUserRegistrationService.class);
+
         @Inject
         ClientCredentialsSessionFactory<? extends Credentials> ehrSessionFactory;
 
@@ -39,8 +44,7 @@ public interface SandboxUserRegistrationService {
                 Organization organization = populateUserOrganization(sandboxUserInfo);
                 MethodOutcome savedResourceMethodOutcome = ehrSessionFactory
                         .createSession().create().resource(organization).execute();
-                System.out.println("newly created resource id: " + savedResourceMethodOutcome.getId());
-
+                logger.info("newly created resource id: " + savedResourceMethodOutcome.getId());
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
