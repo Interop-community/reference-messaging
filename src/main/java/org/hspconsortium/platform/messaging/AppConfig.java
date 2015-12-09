@@ -62,17 +62,17 @@ public class AppConfig {
 
     @Bean
     public String fhirServicesUrl() {
-        return env.getProperty("sandbox.messaging.fhirServicesUrl");
+        return env.getProperty("hsp.reference.api.url");
     }
 
     @Bean
     public String clientId() {
-        return env.getProperty("sandbox.messaging.clientId");
+        return env.getProperty("hsp.reference.messaging.app.clientId");
     }
 
     @Bean
     public String scope() {
-        return env.getProperty("sandbox.messaging.scopes");
+        return env.getProperty("hsp.reference.messaging.app.scopes");
     }
 
     @Bean
@@ -82,7 +82,7 @@ public class AppConfig {
 
     @Bean
     public String jsonWebKeySetLocation() {
-        return env.getProperty("sandbox.messaging.jsonWebKeySetLocation");
+        return env.getProperty("hsp.reference.messaging.app.jsonWebKeySetLocation");
     }
 
     @Bean
