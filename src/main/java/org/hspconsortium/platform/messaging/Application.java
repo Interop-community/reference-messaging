@@ -9,12 +9,12 @@ import org.springframework.integration.config.EnableIntegration;
 
 @SpringBootApplication
 @EnableIntegration
-public class Application extends SpringBootServletInitializer {
+public class Application { //extends SpringBootServletInitializer {
 
-    @Override
-    protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
-        return application.sources(Application.class);
-    }
+//    @Override
+//    protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
+//        return application.sources(Application.class);
+//    }
 
     public static void main(String[] args) {
         ApplicationContext ctx = SpringApplication.run(Application.class, args);

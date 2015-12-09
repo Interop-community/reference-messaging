@@ -48,7 +48,7 @@
             <artifactId>spring-boot-starter-tomcat</artifactId>
             <!-- this tells SpringBoot to target an external container (tomcat)
                  but prevents it from running as an executable WAR -->
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
