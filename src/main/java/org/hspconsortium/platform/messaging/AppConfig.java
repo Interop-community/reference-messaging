@@ -4,6 +4,7 @@ import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.rest.client.IRestfulClientFactory;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
+import org.apache.commons.io.IOUtils;
 import org.hspconsortium.client.auth.Scopes;
 import org.hspconsortium.client.auth.SimpleScope;
 import org.hspconsortium.client.auth.access.AccessTokenProvider;
@@ -24,9 +25,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
+import org.springframework.core.io.ClassPathResource;
 
 import javax.inject.Inject;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.security.NoSuchAlgorithmException;
@@ -198,10 +201,13 @@ public class AppConfig {
                 URL url = new URL(jsonWebKeySetLocation);
                 jwks = JWKSet.load(url, httpConnectionTimeOut, httpReadTimeOut, jsonWebKeySetSizeLimitBytes);
             } else {
-                Class currentClass = new Object() {
-                }.getClass().getEnclosingClass();
-                String fileName = currentClass.getClassLoader().getResource(jsonWebKeySetLocation).getFile();
-                jwks = JWKSet.load(new File(fileName));
+                ClassPathResource cpr = new ClassPathResource(jsonWebKeySetLocation);
+                final File tempFile = File.createTempFile("jwkSet", ".tmp");
+                tempFile.deleteOnExit();
+                try (FileOutputStream out = new FileOutputStream(tempFile)) {
+                    IOUtils.copy(cpr.getInputStream(), out);
+                }
+                jwks = JWKSet.load(tempFile);
             }
         } catch (IOException | ParseException e) {
             throw new RuntimeException(e);
