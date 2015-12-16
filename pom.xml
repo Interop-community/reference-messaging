@@ -20,7 +20,7 @@
         <hapi.version>1.2</hapi.version>
         <drools.version>6.2.0.Final</drools.version>
         <javax.inject.version>1</javax.inject.version>
-        <hsp.client.version>0.9</hsp.client.version>
+        <hsp.client.version>0.10-SNAPSHOT</hsp.client.version>
         <commons-validator.version>1.4.1</commons-validator.version>
         <oro.version>2.0.8</oro.version>
     </properties>
