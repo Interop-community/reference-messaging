@@ -55,6 +55,11 @@ public class HapiJsonHttpMessageConverter extends AbstractHttpMessageConverter<O
     }
 
     @Override
+    public boolean canWrite(Type type, Class<?> aClass, MediaType mediaType) {
+        return false;
+    }
+
+    @Override
     protected boolean supports(Class<?> clazz) {
         // should not be called, since we override canRead/Write instead
         throw new UnsupportedOperationException();
@@ -82,11 +87,8 @@ public class HapiJsonHttpMessageConverter extends AbstractHttpMessageConverter<O
         outputMessage.getBody().write(json.getBytes(DEFAULT_CHARSET));
     }
 
-    protected void writePrefix(JsonGenerator generator, Object object) throws IOException {
-
-    }
-
-    protected void writeSuffix(JsonGenerator generator, Object object) throws IOException {
+    @Override
+    public void write(Object o, Type type, MediaType mediaType, HttpOutputMessage httpOutputMessage) throws IOException, HttpMessageNotWritableException {
 
     }
 
