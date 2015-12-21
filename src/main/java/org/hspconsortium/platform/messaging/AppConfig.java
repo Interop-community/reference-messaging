@@ -26,6 +26,9 @@ import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.ldap.core.LdapTemplate;
+import org.springframework.ldap.core.support.BaseLdapPathBeanPostProcessor;
+import org.springframework.ldap.core.support.LdapContextSource;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -229,6 +232,29 @@ public class AppConfig {
             throw new RuntimeException(e);
         }
 
+    }
+
+        @Bean
+    public LdapContextSource contextSourceTarget() {
+        LdapContextSource ldapContextSource = new LdapContextSource();
+        ldapContextSource.setUrl(env.getProperty("ldap.url"));
+        ldapContextSource.setBase(env.getProperty("ldap.base"));
+        ldapContextSource.setUserDn(env
+                .getProperty("ldap.userDn"));
+        ldapContextSource.setPassword(env
+                .getProperty("ldap.password"));
+
+        return ldapContextSource;
+    }
+
+    @Bean
+    public LdapTemplate ldapTemplate() {
+        return new LdapTemplate(contextSourceTarget());
+    }
+
+    @Bean
+    public BaseLdapPathBeanPostProcessor baseLdapPathBeanPostProcessor() {
+        return new BaseLdapPathBeanPostProcessor();
     }
 
     private boolean isUrl(String location) {

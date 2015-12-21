@@ -51,4 +51,16 @@
             method="registerSandboxUserOrganization"
             />
 
+    <int-http:inbound-gateway
+            request-channel="inboundSandboxUserConversionChannel"
+            path="/sandboxuser/addresource"
+            supported-methods="GET"
+            />
+
+    <int:service-activator
+            id="sandboxUserManagerServiceConversionActivator"
+            input-channel="inboundSandboxUserConversionChannel"
+            ref="sandboxUserRegistrationService"
+            method="addResourceLink"
+            />
 </beans>

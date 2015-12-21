@@ -2,13 +2,13 @@ package org.hspconsortium.platform.messaging;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.boot.context.web.SpringBootServletInitializer;
 import org.springframework.context.ApplicationContext;
 import org.springframework.integration.config.EnableIntegration;
+import org.springframework.ldap.repository.config.EnableLdapRepositories;
 
 @SpringBootApplication
 @EnableIntegration
+@EnableLdapRepositories
 public class Application { //extends SpringBootServletInitializer {
 
 //    @Override

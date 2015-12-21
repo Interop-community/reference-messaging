@@ -33,6 +33,9 @@ public class SandboxUserInfo {
     private String distinctName;
     @JsonProperty("display_name")
     private String displayName;
+    @JsonProperty("ldap_host")
+    private String ldapHost;
+
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
@@ -146,6 +149,16 @@ public class SandboxUserInfo {
     @JsonProperty("display_name")
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
+    }
+
+    @JsonProperty("ldap_host")
+    public String getLdapHost() {
+        return ldapHost;
+    }
+
+    @JsonProperty("ldap_host")
+    public void setLdapHost(String ldapHost) {
+        this.ldapHost = ldapHost;
     }
 
     @JsonAnyGetter
