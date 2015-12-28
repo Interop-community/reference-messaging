@@ -1,5 +1,0 @@
-version: 0.0
-os: linux
-files:
-  - source: reference-messaging
-    destination: /usr/local/apache-tomcat-8.0.20/webapps
