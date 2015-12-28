@@ -2,7 +2,6 @@ package org.hspconsortium.platform.messaging.converter;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.model.api.IResource;
-import com.fasterxml.jackson.core.JsonGenerator;
 import org.apache.commons.io.IOUtils;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.springframework.http.HttpInputMessage;
@@ -55,11 +54,6 @@ public class HapiJsonHttpMessageConverter extends AbstractHttpMessageConverter<O
     }
 
     @Override
-    public boolean canWrite(Type type, Class<?> aClass, MediaType mediaType) {
-        return false;
-    }
-
-    @Override
     protected boolean supports(Class<?> clazz) {
         // should not be called, since we override canRead/Write instead
         throw new UnsupportedOperationException();
@@ -85,11 +79,6 @@ public class HapiJsonHttpMessageConverter extends AbstractHttpMessageConverter<O
             throws IOException, HttpMessageNotWritableException {
         String json = FHIR_CONTEXT.newJsonParser().encodeResourceToString((IBaseResource) object);
         outputMessage.getBody().write(json.getBytes(DEFAULT_CHARSET));
-    }
-
-    @Override
-    public void write(Object o, Type type, MediaType mediaType, HttpOutputMessage httpOutputMessage) throws IOException, HttpMessageNotWritableException {
-
     }
 
     @Override
