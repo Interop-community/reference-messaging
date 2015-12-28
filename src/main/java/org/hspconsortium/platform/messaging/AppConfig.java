@@ -204,17 +204,17 @@ public class AppConfig {
                 URL url = new URL(jsonWebKeySetLocation);
                 jwks = JWKSet.load(url, httpConnectionTimeOut, httpReadTimeOut, jsonWebKeySetSizeLimitBytes);
             } else {
-                Class currentClass = new Object() {
-                }.getClass().getEnclosingClass();
-                String fileName = currentClass.getClassLoader().getResource(jsonWebKeySetLocation).getFile();
-                jwks = JWKSet.load(new File(fileName));
-//                ClassPathResource cpr = new ClassPathResource(jsonWebKeySetLocation);
-//                final File tempFile = File.createTempFile("jwkSet", ".tmp");
-//                tempFile.deleteOnExit();
-//                try (FileOutputStream out = new FileOutputStream(tempFile)) {
-//                    IOUtils.copy(cpr.getInputStream(), out);
-//                }
-//                jwks = JWKSet.load(tempFile);
+//                Class currentClass = new Object() {
+//                }.getClass().getEnclosingClass();
+//                String fileName = currentClass.getClassLoader().getResource(jsonWebKeySetLocation).getFile();
+//                jwks = JWKSet.load(new File(fileName));
+                ClassPathResource cpr = new ClassPathResource(jsonWebKeySetLocation);
+                final File tempFile = File.createTempFile("jwkSet", ".tmp");
+                tempFile.deleteOnExit();
+                try (FileOutputStream out = new FileOutputStream(tempFile)) {
+                    IOUtils.copy(cpr.getInputStream(), out);
+                }
+                jwks = JWKSet.load(tempFile);
             }
         } catch (IOException | ParseException e) {
             throw new RuntimeException(e);
