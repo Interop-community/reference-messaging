@@ -17,7 +17,7 @@
 
     <properties>
         <java.version>1.7</java.version>
-        <hapi.version>1.2</hapi.version>
+        <hapi.version>1.3</hapi.version>
         <drools.version>6.2.0.Final</drools.version>
         <javax.inject.version>1</javax.inject.version>
         <hsp.client.version>0.10-SNAPSHOT</hsp.client.version>
