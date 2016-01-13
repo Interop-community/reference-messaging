@@ -54,6 +54,11 @@ public class HapiJsonHttpMessageConverter extends AbstractHttpMessageConverter<O
     }
 
     @Override
+    public boolean canWrite(Type type, Class<?> aClass, MediaType mediaType) {
+        return canWrite(aClass, mediaType);
+    }
+
+    @Override
     protected boolean supports(Class<?> clazz) {
         // should not be called, since we override canRead/Write instead
         throw new UnsupportedOperationException();
@@ -75,10 +80,25 @@ public class HapiJsonHttpMessageConverter extends AbstractHttpMessageConverter<O
     }
 
     @Override
+    public void write(Object o, Type type, MediaType mediaType, HttpOutputMessage httpOutputMessage)
+            throws IOException, HttpMessageNotWritableException {
+        writeInternal(o, httpOutputMessage);
+    }
+
+
+    @Override
     protected void writeInternal(Object object, HttpOutputMessage outputMessage)
             throws IOException, HttpMessageNotWritableException {
-        String json = FHIR_CONTEXT.newJsonParser().encodeResourceToString((IBaseResource) object);
-        outputMessage.getBody().write(json.getBytes(DEFAULT_CHARSET));
+        if (object != null) {
+            try {
+                String json = FHIR_CONTEXT.newJsonParser().encodeResourceToString((IBaseResource) object);
+                outputMessage.getBody().write(json.getBytes(DEFAULT_CHARSET));
+            } catch (ClassCastException e) {
+                throw new HttpMessageNotWritableException(e.getMessage(), e);
+            }
+        } else {
+            outputMessage.getBody().close();
+        }
     }
 
     @Override

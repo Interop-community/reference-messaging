@@ -32,7 +32,7 @@
     <int:service-activator
             id="submitResourceServiceActivator"
             input-channel="resourceChannel"
-            ref="droolsSubscriptionAdapter"
+            ref="subscriptionManagerService"
             method="submitResource"
             />
 
@@ -74,11 +74,13 @@
             method="submitResource"
             />
 
+<!--
     <int:service-activator
             id="submitResourceViaHTTPServiceActivator"
             input-channel="httpResourceChannel"
             ref="droolsSubscriptionAdapter"
             method="submitResource"
             />
+-->
 
 </beans>
