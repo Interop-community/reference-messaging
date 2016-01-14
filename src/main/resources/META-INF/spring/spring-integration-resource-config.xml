@@ -1,49 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:jms="http://www.springframework.org/schema/integration/jms"
        xmlns:int="http://www.springframework.org/schema/integration"
        xmlns:int-http="http://www.springframework.org/schema/integration/http"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
             http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
-            http://www.springframework.org/schema/integration/jms http://www.springframework.org/schema/integration/jms/spring-integration-jms.xsd
+
             http://www.springframework.org/schema/integration/http http://www.springframework.org/schema/integration/http/spring-integration-http.xsd">
 
-    <!-- external queue for receiving resources to be processed by the messaging service -->
-    <bean id="resourceJMSQueue" class="org.apache.activemq.command.ActiveMQQueue">
-        <constructor-arg value="hspc.messaging.processresource.queue" />
-    </bean>
-
-    <!-- connect the resourceJMSQueue to the resourceChannel -->
-    <jms:message-driven-channel-adapter
-            id="resourceJMSAdapater"
-            destination="resourceJMSQueue"
-            connection-factory="jmsConnectionFactory"
-            channel="resourceChannel"
-            />
-
-    <!-- messaging channel to receive resources -->
-    <int:channel id="resourceChannel">
-        <int:interceptors>
-            <int:wire-tap id="resourceChannelWireTapLogger" channel="resourceChannelLogger"/>
-        </int:interceptors>
-    </int:channel>
-
-    <int:service-activator
-            id="submitResourceServiceActivator"
-            input-channel="resourceChannel"
-            ref="subscriptionManagerService"
-            method="submitResource"
-            />
-
-    <int:logging-channel-adapter
-            id="resourceChannelLogger"
-            level="INFO"
-            logger-name="ResourceChannel"
-            log-full-message="true"
-            />
-
-    <!-- HTTP Resource Health (HTTP alternative to JMS above) -->
+    <!-- HTTP Resource Health -->
     <int-http:inbound-gateway
             request-channel="inboundResourceHealthChannel"
             path="/resource/health"
