@@ -21,13 +21,44 @@ import org.springframework.stereotype.Component;
 import javax.inject.Inject;
 import javax.naming.ldap.LdapName;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.List;
 
 public interface SandboxUserRegistrationService {
     String health();
 
+    /**
+     *
+     * @param userInfoRequest
+     * {
+        "user_id": "ldap userid",
+        "email": "user@imail.org",
+        "organization": "",
+        "organization_name": "",
+        "distinct_name": "uid=C3YRLOH75KMO5NZ1,ou=users,dc=hspconsortium,dc=org",
+        "ldap_host": "ldap://localhost/",
+        "display_name": "",
+        "profile_url" : "http://docs.spring.io/spring-integration/reference/html/http.html"
+        }
+     */
     void registerSandboxUserOrganization(byte[] userInfoRequest);
 
+    /**
+     * create a Practitioner resource url and update LDAP user account. Escape if the profile url url exists.
+     * @return
+     */
     String addResourceLink();
+
+    /**
+     *
+     * @param userInfoRequest
+     * @return
+     * {
+        "user_id": "ldap userid",
+        "profile_url" : "http://docs.spring.io/spring-integration/reference/html/http.html"
+        }
+     */
+    int updateSandboxUserProfile(byte[] userInfoRequest);
 
     @Component
     class Impl implements SandboxUserRegistrationService {
@@ -50,10 +81,41 @@ public interface SandboxUserRegistrationService {
             StringBuffer buffer = new StringBuffer("");
             Iterable<User> allMembers = userService.findAll("ou=users");
             for (User u : allMembers) {
-                buffer.append(u.getUserName()).append(":");
-                buffer.append(addPractitionerUriAttributeToLdap(u, ldapHostUri)).append(".\n");
+                if (u.getProfileUri() != null) {
+                    buffer.append(u.getUserName()).append(":");
+                    buffer.append(u.getProfileUri()).append(".\n");
+                    continue;
+                } else {
+                    buffer.append(u.getUserName()).append(":");
+                    buffer.append(addPractitionerUriAttributeToLdap(u, ldapHostUri)).append(".\n");
+                }
             }
             return buffer.toString();
+        }
+
+        @Override
+        public int updateSandboxUserProfile(byte[] userInfoRequest) {
+            ObjectMapper mapper = new ObjectMapper();
+            final String s = new String(userInfoRequest);
+
+            try {
+                SandboxUserInfo sandboxUserInfo = mapper.readValue(s, SandboxUserInfo.class);
+                List<User> ldapUserList = userService.searchByUserName(sandboxUserInfo.getUserId());
+                if (ldapUserList.size() != 1) {
+                    throw new RuntimeException(String.format("problem locating user id %s from %s ldap path.", sandboxUserInfo.getUserId(), userService.getBaseLdapPath().toString()));
+                }
+                User ldapUser = ldapUserList.get(0);
+                ldapUser.setProfileUri(sandboxUserInfo.getProfileUrl());
+                userService.updateUser(ldapUser.getId().toString(), ldapUser);
+
+                logger.info(String.format("ldap attribute for %s (%s) updated with resource uri: %s"
+                        , ldapUser.getId().toString()
+                        , ldapUser.getUserName()
+                        , sandboxUserInfo.getProfileUrl()));
+                return HttpServletResponse.SC_OK;
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
 
 

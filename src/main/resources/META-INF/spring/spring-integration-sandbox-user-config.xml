@@ -63,4 +63,26 @@
             ref="sandboxUserRegistrationService"
             method="addResourceLink"
             />
+
+
+    <int-http:inbound-gateway
+            request-channel="inboundSandboxUserProfileUpdateChannel"
+            path="/sandboxuser/profileupdate"
+            supported-methods="POST"
+            request-payload-type="byte[]"
+            />
+
+    <int:channel id="inboundSandboxUserProfileUpdateChannel">
+        <int:interceptors>
+            <int:wire-tap id="inboundSandboxUserRegistrationChannelWireTapLogger"
+                          channel="sandboxUserRegistrationChannelLogger"/>
+        </int:interceptors>
+    </int:channel>
+
+    <int:service-activator
+            id="sandboxUserProfileUpdateServiceActivator"
+            input-channel="inboundSandboxUserProfileUpdateChannel"
+            ref="sandboxUserRegistrationService"
+            method="updateSandboxUserProfile"
+            />
 </beans>

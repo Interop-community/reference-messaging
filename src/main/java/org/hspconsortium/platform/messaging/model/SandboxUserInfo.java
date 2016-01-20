@@ -35,6 +35,8 @@ public class SandboxUserInfo {
     private String displayName;
     @JsonProperty("ldap_host")
     private String ldapHost;
+    @JsonProperty("profile_url")
+    private String profileUrl;
 
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
@@ -159,6 +161,16 @@ public class SandboxUserInfo {
     @JsonProperty("ldap_host")
     public void setLdapHost(String ldapHost) {
         this.ldapHost = ldapHost;
+    }
+
+    @JsonProperty("profile_url")
+    public String getProfileUrl() {
+        return profileUrl;
+    }
+
+    @JsonProperty("profile_url")
+    public void setProfileUrl(String profileUrl) {
+        this.profileUrl = profileUrl;
     }
 
     @JsonAnyGetter
