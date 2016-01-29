@@ -11,7 +11,7 @@
 
     <name>Reference Messaging</name>
     <groupId>org.hspconsortium</groupId>
-    <artifactId>hsp-reference-messaging</artifactId>
+    <artifactId>hspc-reference-messaging</artifactId>
     <packaging>war</packaging>
     <version>0.1-SNAPSHOT</version>
 
@@ -20,7 +20,7 @@
         <hapi.version>1.3</hapi.version>
         <drools.version>6.2.0.Final</drools.version>
         <javax.inject.version>1</javax.inject.version>
-        <hsp-java-client.version>0.11-SNAPSHOT</hsp-java-client.version>
+        <hspc-java-client.version>0.11-SNAPSHOT</hspc-java-client.version>
         <commons-validator.version>1.4.1</commons-validator.version>
         <oro.version>2.0.8</oro.version>
     </properties>
@@ -61,8 +61,8 @@
 
         <dependency>
             <groupId>org.hspconsortium</groupId>
-            <artifactId>hsp-java-client</artifactId>
-            <version>${hsp-java-client.version}</version>
+            <artifactId>hspc-java-client</artifactId>
+            <version>${hspc-java-client.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -171,7 +171,7 @@
     </dependencies>
 
     <build>
-        <finalName>hsp-reference-messaging</finalName>
+        <finalName>hspc-reference-messaging</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
