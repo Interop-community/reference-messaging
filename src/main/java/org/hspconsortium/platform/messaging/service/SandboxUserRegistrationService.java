@@ -41,7 +41,7 @@ public interface SandboxUserRegistrationService {
         "profile_url" : "http://docs.spring.io/spring-integration/reference/html/http.html"
         }
      */
-    void registerSandboxUserOrganization(byte[] userInfoRequest);
+    int registerSandboxUserOrganization(byte[] userInfoRequest);
 
     /**
      * create a Practitioner resource url and update LDAP user account. Escape if the profile url url exists.
@@ -143,7 +143,7 @@ public interface SandboxUserRegistrationService {
         }
 
         @Override
-        public void registerSandboxUserOrganization(byte[] userInfoRequest) {
+        public int registerSandboxUserOrganization(byte[] userInfoRequest) {
             ObjectMapper mapper = new ObjectMapper();
             final String s = new String(userInfoRequest);
 
@@ -158,6 +158,8 @@ public interface SandboxUserRegistrationService {
                 User ldapUser = userService.findUser(userDn);
 
                 addPractitionerUriAttributeToLdap(ldapUser, sandboxUserInfo.getLdapHost());
+
+                return HttpServletResponse.SC_OK;
 
             } catch (Exception e) {
                 throw new RuntimeException(e);
