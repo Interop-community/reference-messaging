@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.hspconsortium.reference</groupId>
         <artifactId>hspc-reference-release-spring-boot</artifactId>
-        <version>0.1</version>
+        <version>0.2</version>
     </parent>
 
     <name>Reference Messaging</name>
@@ -164,10 +164,6 @@
     <build>
         <finalName>hspc-reference-messaging</finalName>
         <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
             <plugin>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <executions>
