@@ -162,7 +162,7 @@
     </dependencies>
 
     <build>
-        <finalName>hspc-reference-messaging</finalName>
+        <finalName>${project.artifactId}</finalName>
         <plugins>
             <plugin>
                 <artifactId>maven-failsafe-plugin</artifactId>
