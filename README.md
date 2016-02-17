@@ -21,3 +21,6 @@ Welcome to the HSPC Reference Messaging!  The HSPC Reference Messaging server co
 
 ### Verify ###
 * http://localhost:8080/hspc-reference-messaging/subscription/health
+
+## Where to go from here ##
+https://healthservices.atlassian.net/wiki/display/HSPC/Healthcare+Services+Platform+Consortium
