@@ -16,110 +16,218 @@
 
 package org.hspconsortium.platform.messaging.service.ldap;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
 import org.hspconsortium.platform.messaging.model.ldap.DirectoryType;
 import org.hspconsortium.platform.messaging.model.ldap.User;
-import org.hspconsortium.platform.messaging.model.ldap.UserRepo;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.ldap.core.support.BaseLdapNameAware;
-import org.springframework.ldap.query.LdapQuery;
-import org.springframework.ldap.support.LdapNameBuilder;
-import org.springframework.ldap.support.LdapUtils;
-import org.springframework.stereotype.Component;
 
-import javax.naming.Name;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
+import javax.naming.TimeLimitExceededException;
+import javax.naming.directory.*;
 import javax.naming.ldap.LdapName;
+import javax.naming.ldap.Rdn;
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
-import static org.springframework.ldap.query.LdapQueryBuilder.query;
-
-@Component
-public class UserService implements BaseLdapNameAware {
-    private final UserRepo userRepo;
-    private LdapName baseLdapPath;
+/**
+ * https://docs.oracle.com/javase/tutorial/jndi/ops/index.html
+ */
+public class UserService {
+    private DirContext ldapContext;
     private DirectoryType directoryType = DirectoryType.NORMAL;
 
-    @Autowired
-    public UserService(UserRepo userRepo) {
-        this.userRepo = userRepo;
+    public UserService(DirContext context) {
+        this.ldapContext = context;
     }
 
     public void setDirectoryType(DirectoryType directoryType) {
         this.directoryType = directoryType;
     }
 
-    @Override
-    public void setBaseLdapPath(LdapName baseLdapPath) {
-        this.baseLdapPath = baseLdapPath;
-    }
-
     public Iterable<User> findAll(String base) {
-        LdapQuery ldapQuery = query().base(base).where("objectclass").is("pwmUser");
-        return userRepo.findAll(ldapQuery);
-    }
+        List<User> resultList = new ArrayList();
+        SearchControls searchControl = new SearchControls();
 
-    public User findUser(String userId) {
-        return userRepo.findOne(LdapUtils.newLdapName(userId));
-    }
+        String filter = "(&(objectClass=inetOrgPerson))";
 
-    public User findUser(LdapName userId) {
-        return userRepo.findOne(userId);
-    }
+        try {
+            NamingEnumeration resultNamingEnumeration = this.ldapContext.search(base, filter, searchControl);
 
-    public LdapName toAbsoluteDn(Name relativeName) {
-        return LdapNameBuilder.newInstance(baseLdapPath)
-                .add(relativeName)
-                .build();
+            while (resultNamingEnumeration.hasMore()) {
+                SearchResult entry = (SearchResult) resultNamingEnumeration.next();
+                resultList.add(toUser(entry));
+            }
+        } catch (TimeLimitExceededException te) {
+            return resultList;
+        } catch (NamingException e) {
+            throw new RuntimeException(e);
+        }
+
+        return resultList;
     }
 
     /**
-     * This method expects absolute DNs of group members. In order to find the actual users
-     * the DNs need to have the base LDAP path removed.
+     * Specify the attributes to match.
+     * Ask for objects with the surname ("uid") attribute with the value "noman.rahman@imail.org" and the "cn" attribute.
+     * Attributes matchAttributes = new BasicAttributes(true); // ignore case
+     * matchAttributes.put(new BasicAttribute("uid", "noman.rahman@imail.org"));
+     * matchAttributes.put(new BasicAttribute("cn"));
      *
-     * @param absoluteIds
-     * @return
+     * @param matchAttributes
+     * @param ldapBase
+     * @return first matched attribute of the selected path
      */
-    public Set<User> findAllMembers(Iterable<Name> absoluteIds) {
-        return Sets.newLinkedHashSet(userRepo.findAll(toRelativeIds(absoluteIds)));
-    }
-
-    public Iterable<Name> toRelativeIds(Iterable<Name> absoluteIds) {
-        return Iterables.transform(absoluteIds, new Function<Name, Name>() {
-            @Override
-            public Name apply(Name input) {
-                return LdapUtils.removeFirst(input, baseLdapPath);
+    public User findUser(Attributes matchAttributes, String ldapBase) {
+        // Search for objects that have those matching attributes
+        try {
+            if (ldapBase == null) {
+                ldapBase = "";
             }
-        });
+            NamingEnumeration answer = this.ldapContext.search(ldapBase, matchAttributes);
+            if (answer != null) {
+                while (answer.hasMore()) {
+                    SearchResult entry = (SearchResult) answer.next();
+                    return toUser(entry);
+                }
+            }
+        } catch (NamingException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
     }
 
-    public User updateUser(String userId, User user) {
-        LdapName originalId = LdapUtils.newLdapName(userId);
-        User existingUser = userRepo.findOne(originalId);
+    private User toUser(SearchResult entry) {
+        User user = new User(entry.getName());
 
-        existingUser.setFirstName(user.getFirstName());
-        existingUser.setLastName(user.getLastName());
-        existingUser.setUserPwmId(user.getUserPwmId());
-        existingUser.setEmail(user.getEmail());
-        existingUser.setPhone(user.getPhone());
-        existingUser.setTitle(user.getTitle());
-        existingUser.setEmployeeNumber(user.getEmployeeNumber());
-        existingUser.setOrganizationName(user.getOrganizationName());
-        existingUser.setProfileUri(user.getProfileUri());
+        Field[] fields = user.getClass().getDeclaredFields();
 
-        if (directoryType == DirectoryType.NORMAL) {
-            return userRepo.save(existingUser);
+        final Attributes attributes = entry.getAttributes();
+
+
+        for (Field field : fields) {
+            // Grab the @Attribute annotation
+            org.hspconsortium.platform.messaging.model.ldap.annotations.Attribute
+                    attribute = field.getAnnotation(org.hspconsortium.platform.messaging.model.ldap.annotations.Attribute.class);
+
+            // Did we find the annotation?
+            if (attribute != null) {
+                // Pull attribute name, syntax and whether attribute is binary
+                // from the annotation
+                String localAttributeName = attribute.name();
+
+                if (!localAttributeName.isEmpty()) {
+                    Attribute ldapAttribute = attributes.get(localAttributeName);
+                    PropertyDescriptor pd = null;
+                    if (ldapAttribute != null) {
+                        try {
+                            pd = new PropertyDescriptor(field.getName(), user.getClass());
+                            pd.getWriteMethod().invoke(user, ldapAttribute.get());
+                        } catch (Exception e) {
+                            try {
+                                throw new RuntimeException(String.format("%s needs getter/setter (%s) for annotated (attribute=%s) field %s"
+                                        , user.getClass().getCanonicalName()
+                                        , pd.getWriteMethod().getName()
+                                        , ldapAttribute.get()
+                                        , field.getName()
+                                ));
+                            } catch (NamingException e1) {
+                                throw new RuntimeException(e1);
+                            }
+                        }
+                    }
+                }
+            }
         }
         return user;
     }
 
-    public List<User> searchByUserName(String userName) {
-        return userRepo.findByUserName(userName);
+    public User updateUser(User user) {
+        try {
+            List<ModificationItem> modificationItemList = new ArrayList<>();
+            Attributes attributes = this.ldapContext.getAttributes(user.getLdapEntityName());
+
+            final Field[] fields = user.getClass().getDeclaredFields();
+
+            for (Field field : fields) {
+                // Grab the @Attribute annotation
+                org.hspconsortium.platform.messaging.model.ldap.annotations.Attribute fieldAttribute
+                        = field.getAnnotation(org.hspconsortium.platform.messaging.model.ldap.annotations.Attribute.class);
+
+                // Did we find the annotation?
+                if (fieldAttribute != null) {
+                    Attribute ldapAttribute = attributes.get(fieldAttribute.name());
+
+                    PropertyDescriptor pd = null;
+                    if (ldapAttribute != null) {
+                        try {
+                            pd = new PropertyDescriptor(field.getName(), user.getClass());
+                            Object fieldValue = pd.getReadMethod().invoke(user);
+                            if (!fieldValue.equals(ldapAttribute.get())) {
+                                modificationItemList.add(
+                                        new ModificationItem(DirContext.REPLACE_ATTRIBUTE
+                                                , new BasicAttribute(ldapAttribute.getID(), fieldValue)));
+                            }
+                        } catch (Exception e) {
+                            try {
+                                throw new RuntimeException(String.format("%s needs getter/setter (%s) for annotated (attribute = %s) field %s"
+                                        , user.getClass().getCanonicalName()
+                                        , pd.getReadMethod().getName()
+                                        , ldapAttribute.get()
+                                        , field.getName()
+                                ));
+                            } catch (NamingException e1) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                    }
+
+                }
+            }
+
+            if (modificationItemList.size() > 0) {
+                this.ldapContext.modifyAttributes(user.getLdapEntityName(), modificationItemList.toArray(new ModificationItem[0]));
+            }
+        } catch (NamingException e) {
+            throw new RuntimeException(e);
+        }
+        return user;
     }
 
-    public LdapName getBaseLdapPath() {
-        return baseLdapPath;
+    public Iterable<User> searchByDistinctName(LdapName dn) {
+        Attributes matchAttributes = new BasicAttributes(true); // ignore case
+        List<User> resultList = new ArrayList<>();
+        try {
+
+            final List<Rdn> contextRdns = new LdapName(this.ldapContext.getNameInNamespace()).getRdns();
+            if (dn.startsWith(contextRdns)) {
+                final Object remove = dn.remove(contextRdns.size());
+                dn = new LdapName(remove.toString());
+
+            }
+            Iterator<Rdn> attIterator = dn.getRdns().iterator();
+
+            while(attIterator.hasNext()) {
+                Attributes attributes = attIterator.next().toAttributes();
+                NamingEnumeration<String> ids = attributes.getIDs();
+                while(ids.hasMore()) {
+                    matchAttributes.put(attributes.get(ids.next()));
+                }
+            }
+
+            NamingEnumeration resultNamingEnumeration = this.ldapContext.search("", matchAttributes);
+
+            while (resultNamingEnumeration.hasMore()) {
+                SearchResult entry = (SearchResult) resultNamingEnumeration.next();
+                resultList.add(toUser(entry));
+            }
+        } catch (TimeLimitExceededException te) {
+            return resultList;
+        } catch (NamingException e) {
+            throw new RuntimeException(e);
+        }
+        return resultList;
     }
+
 }

@@ -1,27 +1,16 @@
 package org.hspconsortium.platform.messaging.model.ldap;
 
-import org.springframework.ldap.odm.annotations.Attribute;
-import org.springframework.ldap.odm.annotations.DnAttribute;
-import org.springframework.ldap.odm.annotations.Entry;
-import org.springframework.ldap.odm.annotations.Id;
-import org.springframework.ldap.support.LdapUtils;
+import org.hspconsortium.platform.messaging.model.ldap.annotations.Attribute;
 
-import javax.naming.Name;
-
-@Entry(objectClasses = {"inetOrgPerson", "organizationalPerson", "person", "pwmUser", "top"}, base = "ou=users")
 public final class User {
-    @Id
-    private Name id;
-
     @Attribute(name = "cn")
-    @DnAttribute(value = "cn", index = 1)
-    private String userPwmId;
+    private String cn;
 
     @Attribute(name = "uid")
     private String userName;
 
     @Attribute(name = "employeeNumber")
-    private int employeeNumber;
+    private String employeeNumber;
 
     @Attribute(name = "organizationName")
     private String organizationName;
@@ -46,19 +35,23 @@ public final class User {
 
     @Attribute(name = "labeledURI")
     private String profileUri;
+    @Attribute(name = "givenName")
+    private String givenName;
+    @Attribute(name = "familyName")
+    private String familyName;
+    @Attribute(name = "middleName")
+    private String middleName;
+    @Attribute(name = "profile")
+    private String profile;
+    @Attribute(name = "website")
+    private String website;
 
+    private final String ldapEntityName;
 
-    public Name getId() {
-        return id;
+    public User(String ldapEntityName) {
+        this.ldapEntityName = ldapEntityName;
     }
 
-    public void setId(Name id) {
-        this.id = id;
-    }
-
-    public void setId(String id) {
-        this.id = LdapUtils.newLdapName(id);
-    }
 
     public String getEmail() {
         return email;
@@ -68,11 +61,11 @@ public final class User {
         this.email = email;
     }
 
-    public int getEmployeeNumber() {
+    public String getEmployeeNumber() {
         return employeeNumber;
     }
 
-    public void setEmployeeNumber(int employeeNumber) {
+    public void setEmployeeNumber(String employeeNumber) {
         this.employeeNumber = employeeNumber;
     }
 
@@ -84,12 +77,12 @@ public final class User {
         this.firstName = firstName;
     }
 
-    public String getUserPwmId() {
-        return userPwmId;
+    public String getCn() {
+        return cn;
     }
 
-    public void setUserPwmId(String userPwmId) {
-        this.userPwmId = userPwmId;
+    public void setCn(String cn) {
+        this.cn = cn;
     }
 
     public String getLastName() {
@@ -148,6 +141,51 @@ public final class User {
         this.organizationName = organizationName;
     }
 
+    public void setGivenName(String givenName) {
+        this.givenName = givenName;
+    }
+
+    public String getGivenName() {
+        return givenName;
+    }
+
+    public void setFamilyName(String familyName) {
+        this.familyName = familyName;
+    }
+
+    public String getFamilyName() {
+        return familyName;
+    }
+
+    public void setMiddleName(String middleName) {
+        this.middleName = middleName;
+    }
+
+    public String getMiddleName() {
+        return middleName;
+    }
+
+    public void setProfile(String profile) {
+        this.profile = profile;
+    }
+
+    public String getProfile() {
+        return profile;
+    }
+
+    public void setWebsite(String website) {
+        this.website = website;
+    }
+
+    public String getWebsite() {
+        return website;
+    }
+
+    public String getLdapEntityName() {
+        return ldapEntityName;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -155,13 +193,14 @@ public final class User {
 
         User user = (User) o;
 
-        if (id != null ? !id.equals(user.id) : user.id != null) return false;
+        if (ldapEntityName != null ? !ldapEntityName.equals(user.ldapEntityName) : user.ldapEntityName != null)
+            return false;
 
         return true;
     }
 
     @Override
     public int hashCode() {
-        return id != null ? id.hashCode() : 0;
+        return ldapEntityName != null ? ldapEntityName.hashCode() : 0;
     }
 }

@@ -15,48 +15,46 @@ import org.hspconsortium.platform.messaging.model.ldap.User;
 import org.hspconsortium.platform.messaging.service.ldap.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ldap.support.LdapUtils;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
+import javax.naming.directory.Attributes;
+import javax.naming.directory.BasicAttribute;
+import javax.naming.directory.BasicAttributes;
 import javax.naming.ldap.LdapName;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.List;
 
 public interface SandboxUserRegistrationService {
     String health();
 
     /**
-     *
-     * @param userInfoRequest
-     * {
-        "user_id": "ldap userid",
-        "email": "user@imail.org",
-        "organization": "",
-        "organization_name": "",
-        "distinct_name": "uid=C3YRLOH75KMO5NZ1,ou=users,dc=hspconsortium,dc=org",
-        "ldap_host": "ldap://localhost/",
-        "display_name": "",
-        "profile_url" : "http://docs.spring.io/spring-integration/reference/html/http.html"
-        }
+     * @param userInfoRequest {
+     *                        "user_id": "ldap userid",
+     *                        "email": "user@imail.org",
+     *                        "organization": "",
+     *                        "organization_name": "",
+     *                        "distinct_name": "uid=C3YRLOH75KMO5NZ1,ou=users,dc=hspconsortium,dc=org",
+     *                        "ldap_host": "ldap://localhost/",
+     *                        "display_name": "",
+     *                        "profile_url" : "http://docs.spring.io/spring-integration/reference/html/http.html"
+     *                        }
      */
     int registerSandboxUserOrganization(byte[] userInfoRequest);
 
     /**
      * create a Practitioner resource url and update LDAP user account. Escape if the profile url url exists.
+     *
      * @return
      */
     String addResourceLink();
 
     /**
-     *
      * @param userInfoRequest
-     * @return
-     * {
-        "user_id": "ldap userid",
-        "profile_url" : "http://docs.spring.io/spring-integration/reference/html/http.html"
-        }
+     * @return {
+     * "user_id": "ldap userid",
+     * "profile_url" : "http://docs.spring.io/spring-integration/reference/html/http.html"
+     * }
      */
     int updateSandboxUserProfile(byte[] userInfoRequest);
 
@@ -79,7 +77,7 @@ public interface SandboxUserRegistrationService {
         public String addResourceLink() {
             String ldapHostUri = "ldap://sandbox.hspconsortium.org";
             StringBuffer buffer = new StringBuffer("");
-            Iterable<User> allMembers = userService.findAll("ou=users");
+            Iterable<User> allMembers = userService.findAll("");
             for (User u : allMembers) {
                 if (u.getProfileUri() != null) {
                     buffer.append(u.getUserName()).append(":");
@@ -87,7 +85,8 @@ public interface SandboxUserRegistrationService {
                     continue;
                 } else {
                     buffer.append(u.getUserName()).append(":");
-                    buffer.append(addPractitionerUriAttributeToLdap(u, ldapHostUri)).append(".\n");
+                    //buffer.append(addPractitionerUriAttributeToLdap(u, ldapHostUri)).append(".\n");
+                    buffer.append("\n");
                 }
             }
             return buffer.toString();
@@ -100,16 +99,15 @@ public interface SandboxUserRegistrationService {
 
             try {
                 SandboxUserInfo sandboxUserInfo = mapper.readValue(s, SandboxUserInfo.class);
-                List<User> ldapUserList = userService.searchByUserName(sandboxUserInfo.getUserId());
-                if (ldapUserList.size() != 1) {
-                    throw new RuntimeException(String.format("problem locating user id %s from %s ldap path.", sandboxUserInfo.getUserId(), userService.getBaseLdapPath().toString()));
-                }
-                User ldapUser = ldapUserList.get(0);
+                Attributes matchAttributes = new BasicAttributes(true); // ignore case
+                matchAttributes.put(new BasicAttribute("uid", sandboxUserInfo.getUserId()));
+                matchAttributes.put(new BasicAttribute("cn"));
+                User ldapUser = userService.findUser(matchAttributes, "");
                 ldapUser.setProfileUri(sandboxUserInfo.getProfileUrl());
-                userService.updateUser(ldapUser.getId().toString(), ldapUser);
+                userService.updateUser(ldapUser);
 
                 logger.info(String.format("ldap attribute for %s (%s) updated with resource uri: %s"
-                        , ldapUser.getId().toString()
+                        , ldapUser.getLdapEntityName()
                         , ldapUser.getUserName()
                         , sandboxUserInfo.getProfileUrl()));
                 return HttpServletResponse.SC_OK;
@@ -133,10 +131,10 @@ public interface SandboxUserRegistrationService {
 
             ldapUser.setProfileUri(savedPractitionerOutcome.getId().getValue());
 
-            userService.updateUser(ldapUser.getId().toString(), ldapUser);
+            userService.updateUser(ldapUser);
 
             logger.info(String.format("ldap attribute for %s (%s) updated with newly created practitioner resource id: %s"
-                    , ldapUser.getId().toString()
+                    , ldapUser.getLdapEntityName().toString()
                     , ldapUser.getUserName()
                     , savedPractitionerOutcome.getId()));
             return savedPractitionerOutcome.getId().getValue();
@@ -151,13 +149,10 @@ public interface SandboxUserRegistrationService {
                 SandboxUserInfo sandboxUserInfo = mapper.readValue(s, SandboxUserInfo.class);
                 //sandbox user info comes with the full path of dn so we have to remove the
                 //base path since service already has base path setup
-                LdapName dn = LdapUtils.newLdapName(sandboxUserInfo.getDistinctName());
-                LdapName basePath = userService.getBaseLdapPath();
-                LdapName userDn = LdapUtils.removeFirst(dn, basePath);
+                LdapName dn = new LdapName(sandboxUserInfo.getDistinctName());
+                Iterable<User> ldapUser = userService.searchByDistinctName(dn);
 
-                User ldapUser = userService.findUser(userDn);
-
-                addPractitionerUriAttributeToLdap(ldapUser, sandboxUserInfo.getLdapHost());
+                addPractitionerUriAttributeToLdap(ldapUser.iterator().next(), sandboxUserInfo.getLdapHost());
 
                 return HttpServletResponse.SC_OK;
 
@@ -168,7 +163,7 @@ public interface SandboxUserRegistrationService {
 
         private Practitioner populateUserAsPractitioner(User ldapUserInfo, Organization managingOrganization) {
             Practitioner practitioner = new Practitioner();
-            practitioner.addIdentifier().setSystem(ldapUserInfo.getId().toString()).setValue(ldapUserInfo.getDisplayName());
+            practitioner.addIdentifier().setSystem(ldapUserInfo.getLdapEntityName()).setValue(ldapUserInfo.getDisplayName());
             practitioner.setActive(true);
             practitioner.setName(new HumanNameDt().setText(ldapUserInfo.getDisplayName()));
             practitioner.addPractitionerRole().setRole(PractitionerRoleEnum.DOCTOR).setManagingOrganization(managingOrganization.getPartOf())
@@ -179,7 +174,7 @@ public interface SandboxUserRegistrationService {
 
         private Organization populateUserOrganization(User ldapUserInfo, String ldapHostUri) {
             Organization organization = new Organization();
-            organization.addIdentifier().setSystem(ldapHostUri + "/" + ldapUserInfo.getId().toString()).setValue(ldapUserInfo.getUserName());
+            organization.addIdentifier().setSystem(ldapHostUri + "/" + ldapUserInfo.getLdapEntityName()).setValue(ldapUserInfo.getUserName());
             organization.setType(OrganizationTypeEnum.HEALTHCARE_PROVIDER);
             organization.setName(ldapUserInfo.getOrganizationName());
             organization.setActive(true);

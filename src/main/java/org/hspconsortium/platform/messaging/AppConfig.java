@@ -17,6 +17,7 @@ import org.hspconsortium.client.session.clientcredentials.ClientCredentialsSessi
 import org.hspconsortium.platform.messaging.drools.service.DroolsSubscriptionManagerService;
 import org.hspconsortium.platform.messaging.service.SandboxUserRegistrationService;
 import org.hspconsortium.platform.messaging.service.SubscriptionManagerService;
+import org.hspconsortium.platform.messaging.service.ldap.UserService;
 import org.kie.internal.KnowledgeBase;
 import org.kie.internal.KnowledgeBaseFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,11 +27,12 @@ import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.ldap.core.LdapTemplate;
-import org.springframework.ldap.core.support.BaseLdapPathBeanPostProcessor;
-import org.springframework.ldap.core.support.LdapContextSource;
 
 import javax.inject.Inject;
+import javax.naming.Context;
+import javax.naming.NamingException;
+import javax.naming.directory.DirContext;
+import javax.naming.directory.InitialDirContext;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -38,6 +40,7 @@ import java.net.URL;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.text.ParseException;
+import java.util.Hashtable;
 import java.util.UUID;
 
 @Configuration
@@ -238,27 +241,20 @@ public class AppConfig {
 
     }
 
-        @Bean
-    public LdapContextSource contextSourceTarget() {
-        LdapContextSource ldapContextSource = new LdapContextSource();
-        ldapContextSource.setUrl(env.getProperty("ldap.url"));
-        ldapContextSource.setBase(env.getProperty("ldap.base"));
-        ldapContextSource.setUserDn(env
-                .getProperty("ldap.userDn"));
-        ldapContextSource.setPassword(env
-                .getProperty("ldap.password"));
-
-        return ldapContextSource;
-    }
-
     @Bean
-    public LdapTemplate ldapTemplate() {
-        return new LdapTemplate(contextSourceTarget());
-    }
+    public UserService ldapUserService() throws NamingException {
+        // Set up the environment for creating the initial context
+        Hashtable<String, Object> contextEnv = new Hashtable<String, Object>(5);
+        contextEnv.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
+        contextEnv.put(Context.PROVIDER_URL, env.getProperty("ldap.server"));
+        contextEnv.put(Context.SECURITY_AUTHENTICATION, "simple");
+        contextEnv.put(Context.SECURITY_PRINCIPAL, env.getProperty("ldap.userDn"));
+        contextEnv.put(Context.SECURITY_CREDENTIALS, env.getProperty("ldap.password"));
 
-    @Bean
-    public BaseLdapPathBeanPostProcessor baseLdapPathBeanPostProcessor() {
-        return new BaseLdapPathBeanPostProcessor();
+        // Create the initial context
+        DirContext ctx = new InitialDirContext(contextEnv);
+        UserService userService = new UserService(ctx);
+        return userService;
     }
 
     private boolean isUrl(String location) {
