@@ -96,7 +96,7 @@ public interface SandboxUserRegistrationService {
         public int updateSandboxUserProfile(byte[] userInfoRequest) {
             ObjectMapper mapper = new ObjectMapper();
             final String s = new String(userInfoRequest);
-
+            logger.info(String.format("User detail:\t %s\n", s));
             try {
                 SandboxUserInfo sandboxUserInfo = mapper.readValue(s, SandboxUserInfo.class);
                 Attributes matchAttributes = new BasicAttributes(true); // ignore case
@@ -144,15 +144,15 @@ public interface SandboxUserRegistrationService {
         public int registerSandboxUserOrganization(byte[] userInfoRequest) {
             ObjectMapper mapper = new ObjectMapper();
             final String s = new String(userInfoRequest);
-
+            logger.info(String.format("User detail:\t %s\n", s));
             try {
                 SandboxUserInfo sandboxUserInfo = mapper.readValue(s, SandboxUserInfo.class);
                 //sandbox user info comes with the full path of dn so we have to remove the
                 //base path since service already has base path setup
                 LdapName dn = new LdapName(sandboxUserInfo.getDistinctName());
                 Iterable<User> ldapUser = userService.searchByDistinctName(dn);
-
-                addPractitionerUriAttributeToLdap(ldapUser.iterator().next(), sandboxUserInfo.getLdapHost());
+                if (ldapUser != null && ldapUser.iterator().hasNext())
+                    addPractitionerUriAttributeToLdap(ldapUser.iterator().next(), sandboxUserInfo.getLdapHost());
 
                 return HttpServletResponse.SC_OK;
 

@@ -160,27 +160,36 @@ public class UserService {
                     Attribute ldapAttribute = attributes.get(fieldAttribute.name());
 
                     PropertyDescriptor pd = null;
-                    if (ldapAttribute != null) {
-                        try {
-                            pd = new PropertyDescriptor(field.getName(), user.getClass());
-                            Object fieldValue = pd.getReadMethod().invoke(user);
-                            if (!fieldValue.equals(ldapAttribute.get())) {
-                                modificationItemList.add(
-                                        new ModificationItem(DirContext.REPLACE_ATTRIBUTE
-                                                , new BasicAttribute(ldapAttribute.getID(), fieldValue)));
-                            }
-                        } catch (Exception e) {
-                            try {
-                                throw new RuntimeException(String.format("%s needs getter/setter (%s) for annotated (attribute = %s) field %s"
-                                        , user.getClass().getCanonicalName()
-                                        , pd.getReadMethod().getName()
-                                        , ldapAttribute.get()
-                                        , field.getName()
-                                ));
-                            } catch (NamingException e1) {
-                                throw new RuntimeException(e);
-                            }
+                    Object fieldValue = null;
+                    try {
+                        pd = new PropertyDescriptor(field.getName(), user.getClass());
+                        fieldValue = pd.getReadMethod().invoke(user);
+                        if (fieldValue == null) {
+                            continue;
                         }
+                    } catch (Exception e) {
+                        try {
+                            throw new RuntimeException(String.format("%s needs getter/setter (%s) for annotated (attribute = %s) field %s"
+                                    , user.getClass().getCanonicalName()
+                                    , pd.getReadMethod().getName()
+                                    , ldapAttribute.get()
+                                    , field.getName()
+                            ));
+                        } catch (NamingException e1) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+
+                    if (ldapAttribute != null) {
+                        if (!fieldValue.equals(ldapAttribute.get())) {
+                            modificationItemList.add(
+                                    new ModificationItem(DirContext.REPLACE_ATTRIBUTE
+                                            , new BasicAttribute(ldapAttribute.getID(), fieldValue)));
+                        }
+                    } else {
+                        modificationItemList.add(
+                                new ModificationItem(DirContext.REPLACE_ATTRIBUTE
+                                        , new BasicAttribute(fieldAttribute.name(), fieldValue)));
                     }
 
                 }
@@ -208,10 +217,10 @@ public class UserService {
             }
             Iterator<Rdn> attIterator = dn.getRdns().iterator();
 
-            while(attIterator.hasNext()) {
+            while (attIterator.hasNext()) {
                 Attributes attributes = attIterator.next().toAttributes();
                 NamingEnumeration<String> ids = attributes.getIDs();
-                while(ids.hasMore()) {
+                while (ids.hasMore()) {
                     matchAttributes.put(attributes.get(ids.next()));
                 }
             }
