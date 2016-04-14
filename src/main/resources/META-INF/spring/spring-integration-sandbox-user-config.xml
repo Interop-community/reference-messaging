@@ -12,14 +12,14 @@
             request-channel="inboundSandboxUserHealthChannel"
             path="/sandboxuser/health"
             supported-methods="GET"
-            />
+    />
 
     <int:service-activator
             id="sandboxUserManagerServiceHealthActivator"
             input-channel="inboundSandboxUserHealthChannel"
             ref="sandboxUserRegistrationService"
             method="health"
-            />
+    />
 
     <!-- Inbound HTTP Sandbox User Organization Registration Management -->
     <int:channel id="inboundSandboxUserRegistrationChannel">
@@ -34,43 +34,46 @@
             level="INFO"
             logger-name="SandboxUserRegistrationChannel"
             log-full-message="true"
-            />
+    />
 
     <int-http:inbound-gateway
             request-channel="inboundSandboxUserRegistrationChannel"
             reply-channel=""
             path="/sandboxuser"
             supported-methods="POST"
-            request-payload-type="byte[]"
-            />
+            request-payload-type="byte[]">
+        <int-http:cross-origin/>
+    </int-http:inbound-gateway>
 
     <int:service-activator
             id="sandboxUserOrganizationActivator"
             input-channel="inboundSandboxUserRegistrationChannel"
             ref="sandboxUserRegistrationService"
             method="registerSandboxUserOrganization"
-            />
+    />
 
     <int-http:inbound-gateway
             request-channel="inboundSandboxUserConversionChannel"
             path="/sandboxuser/addresource"
-            supported-methods="GET"
-            />
+            supported-methods="GET">
+        <int-http:cross-origin/>
+    </int-http:inbound-gateway>
 
     <int:service-activator
             id="sandboxUserManagerServiceConversionActivator"
             input-channel="inboundSandboxUserConversionChannel"
             ref="sandboxUserRegistrationService"
             method="addResourceLink"
-            />
+    />
 
 
     <int-http:inbound-gateway
             request-channel="inboundSandboxUserProfileUpdateChannel"
             path="/sandboxuser/profileupdate"
             supported-methods="POST"
-            request-payload-type="byte[]"
-            />
+            request-payload-type="byte[]">
+        <int-http:cross-origin/>
+    </int-http:inbound-gateway>
 
     <int:channel id="inboundSandboxUserProfileUpdateChannel">
         <int:interceptors>
@@ -84,5 +87,5 @@
             input-channel="inboundSandboxUserProfileUpdateChannel"
             ref="sandboxUserRegistrationService"
             method="updateSandboxUserProfile"
-            />
+    />
 </beans>
