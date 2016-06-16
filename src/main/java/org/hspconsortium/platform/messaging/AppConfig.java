@@ -31,8 +31,6 @@ import org.springframework.core.io.ClassPathResource;
 import javax.inject.Inject;
 import javax.naming.Context;
 import javax.naming.NamingException;
-import javax.naming.directory.DirContext;
-import javax.naming.directory.InitialDirContext;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -120,7 +118,7 @@ public class AppConfig {
 
     @Bean
     public String proxyHost() {
-        //-Dhttp.proxyHost=proxy.host.com -Dhttp.proxyPort=8080  -Dhttp.proxyUser=username -Dhttp.proxyPassword=password
+        //-Dhttp.proxyHost=proxy.host.com -Dhttp.proxyPort=8080  -Dhttp.proxyUser=username -Dhttp.proxyPassword=password -Dhttp.nonProxyHosts=*.nonproxyrepos.com|localhost
         return System.getProperty("http.proxyHost", System.getProperty("https.proxyHost"));
     }
 
@@ -251,9 +249,7 @@ public class AppConfig {
         contextEnv.put(Context.SECURITY_PRINCIPAL, env.getProperty("ldap.userDn"));
         contextEnv.put(Context.SECURITY_CREDENTIALS, env.getProperty("ldap.password"));
 
-        // Create the initial context
-        DirContext ctx = new InitialDirContext(contextEnv);
-        UserService userService = new UserService(ctx);
+        UserService userService = new UserService(contextEnv);
         return userService;
     }
 

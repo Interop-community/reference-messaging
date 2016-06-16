@@ -19,6 +19,7 @@ package org.hspconsortium.platform.messaging.service.ldap;
 import org.hspconsortium.platform.messaging.model.ldap.DirectoryType;
 import org.hspconsortium.platform.messaging.model.ldap.User;
 
+import javax.naming.NameNotFoundException;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.TimeLimitExceededException;
@@ -28,18 +29,21 @@ import javax.naming.ldap.Rdn;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 
 /**
  * https://docs.oracle.com/javase/tutorial/jndi/ops/index.html
+ * http://docs.oracle.com/javase/jndi/tutorial/ldap/connect/config.html
+ * http://stackoverflow.com/questions/30984699/how-to-fix-java-net-socketexception-connection-reset
  */
 public class UserService {
-    private DirContext ldapContext;
+    private Hashtable<String, Object> environment;
     private DirectoryType directoryType = DirectoryType.NORMAL;
 
-    public UserService(DirContext context) {
-        this.ldapContext = context;
+    public UserService(Hashtable<String, Object> contextEnv) {
+        this.environment = contextEnv;
     }
 
     public void setDirectoryType(DirectoryType directoryType) {
@@ -47,22 +51,40 @@ public class UserService {
     }
 
     public Iterable<User> findAll(String base) {
-        List<User> resultList = new ArrayList();
+        List<User> resultList = new ArrayList<>();
         SearchControls searchControl = new SearchControls();
 
         String filter = "(&(objectClass=inetOrgPerson))";
 
+        DirContext ldapContext = null;
+        NamingEnumeration resultNamingEnumeration = null;
         try {
-            NamingEnumeration resultNamingEnumeration = this.ldapContext.search(base, filter, searchControl);
+            ldapContext = new InitialDirContext(environment);
+            resultNamingEnumeration = ldapContext.search(base, filter, searchControl);
 
             while (resultNamingEnumeration.hasMore()) {
                 SearchResult entry = (SearchResult) resultNamingEnumeration.next();
                 resultList.add(toUser(entry));
             }
-        } catch (TimeLimitExceededException te) {
-            return resultList;
+        } catch (NameNotFoundException e) {
+            throw new RuntimeException("The base context was not found.", e);
         } catch (NamingException e) {
             throw new RuntimeException(e);
+        } finally {
+            if (resultNamingEnumeration != null) {
+                try {
+                    resultNamingEnumeration.close();
+                } catch (Exception e) {
+                    // Never mind this.
+                }
+            }
+            if (ldapContext != null) {
+                try {
+                    ldapContext.close();
+                } catch (Exception e) {
+                    // Never mind this.
+                }
+            }
         }
 
         return resultList;
@@ -75,25 +97,45 @@ public class UserService {
      * matchAttributes.put(new BasicAttribute("uid", "noman.rahman@imail.org"));
      * matchAttributes.put(new BasicAttribute("cn"));
      *
-     * @param matchAttributes
-     * @param ldapBase
+     * @param matchAttributes query attributes
+     * @param ldapBase ldap base
      * @return first matched attribute of the selected path
      */
     public User findUser(Attributes matchAttributes, String ldapBase) {
         // Search for objects that have those matching attributes
+        DirContext ldapContext = null;
+        NamingEnumeration results = null;
         try {
             if (ldapBase == null) {
                 ldapBase = "";
             }
-            NamingEnumeration answer = this.ldapContext.search(ldapBase, matchAttributes);
-            if (answer != null) {
-                while (answer.hasMore()) {
-                    SearchResult entry = (SearchResult) answer.next();
+            ldapContext = new InitialDirContext(environment);
+            results = ldapContext.search(ldapBase, matchAttributes);
+            if (results != null) {
+                while (results.hasMore()) {
+                    SearchResult entry = (SearchResult) results.next();
                     return toUser(entry);
                 }
             }
+        } catch (NameNotFoundException e) {
+            throw new RuntimeException("The base context was not found.", e);
         } catch (NamingException e) {
             throw new RuntimeException(e);
+        } finally {
+            if (results != null) {
+                try {
+                    results.close();
+                } catch (Exception e) {
+                    // Never mind this.
+                }
+            }
+            if (ldapContext != null) {
+                try {
+                    ldapContext.close();
+                } catch (Exception e) {
+                    // Never mind this.
+                }
+            }
         }
         return null;
     }
@@ -144,9 +186,11 @@ public class UserService {
     }
 
     public User updateUser(User user) {
+        DirContext ldapContext = null;
         try {
             List<ModificationItem> modificationItemList = new ArrayList<>();
-            Attributes attributes = this.ldapContext.getAttributes(user.getLdapEntityName());
+            ldapContext = new InitialDirContext(environment);
+            Attributes attributes = ldapContext.getAttributes(user.getLdapEntityName());
 
             final Field[] fields = user.getClass().getDeclaredFields();
 
@@ -160,7 +204,7 @@ public class UserService {
                     Attribute ldapAttribute = attributes.get(fieldAttribute.name());
 
                     PropertyDescriptor pd = null;
-                    Object fieldValue = null;
+                    Object fieldValue;
                     try {
                         pd = new PropertyDescriptor(field.getName(), user.getClass());
                         fieldValue = pd.getReadMethod().invoke(user);
@@ -196,10 +240,21 @@ public class UserService {
             }
 
             if (modificationItemList.size() > 0) {
-                this.ldapContext.modifyAttributes(user.getLdapEntityName(), modificationItemList.toArray(new ModificationItem[0]));
+                ldapContext = new InitialDirContext(environment);
+                ldapContext.modifyAttributes(user.getLdapEntityName(), modificationItemList.toArray(new ModificationItem[0]));
             }
+        } catch (NameNotFoundException e) {
+            throw new RuntimeException("The base context was not found.", e);
         } catch (NamingException e) {
             throw new RuntimeException(e);
+        } finally {
+            if (ldapContext != null) {
+                try {
+                    ldapContext.close();
+                } catch (Exception e) {
+                    // Never mind this.
+                }
+            }
         }
         return user;
     }
@@ -207,9 +262,11 @@ public class UserService {
     public Iterable<User> searchByDistinctName(LdapName dn) {
         Attributes matchAttributes = new BasicAttributes(true); // ignore case
         List<User> resultList = new ArrayList<>();
+        DirContext ldapContext = null;
+        NamingEnumeration results = null;
         try {
-
-            final List<Rdn> contextRdns = new LdapName(this.ldapContext.getNameInNamespace()).getRdns();
+            ldapContext = new InitialDirContext(environment);
+            final List<Rdn> contextRdns = new LdapName(ldapContext.getNameInNamespace()).getRdns();
             if (dn.startsWith(contextRdns)) {
                 final Object remove = dn.remove(contextRdns.size());
                 dn = new LdapName(remove.toString());
@@ -225,16 +282,33 @@ public class UserService {
                 }
             }
 
-            NamingEnumeration resultNamingEnumeration = this.ldapContext.search("", matchAttributes);
+            results = ldapContext.search("", matchAttributes);
 
-            while (resultNamingEnumeration.hasMore()) {
-                SearchResult entry = (SearchResult) resultNamingEnumeration.next();
+            while (results.hasMore()) {
+                SearchResult entry = (SearchResult) results.next();
                 resultList.add(toUser(entry));
             }
         } catch (TimeLimitExceededException te) {
             return resultList;
+        } catch (NameNotFoundException e) {
+            throw new RuntimeException("The base context was not found.", e);
         } catch (NamingException e) {
             throw new RuntimeException(e);
+        } finally {
+            if (results != null) {
+                try {
+                    results.close();
+                } catch (Exception e) {
+                    // Never mind this.
+                }
+            }
+            if (ldapContext != null) {
+                try {
+                    ldapContext.close();
+                } catch (Exception e) {
+                    // Never mind this.
+                }
+            }
         }
         return resultList;
     }
