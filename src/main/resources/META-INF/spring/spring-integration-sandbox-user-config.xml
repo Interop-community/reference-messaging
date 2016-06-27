@@ -22,34 +22,11 @@
     />
 
     <!-- Inbound HTTP Sandbox User Organization Registration Management -->
-    <int:channel id="inboundSandboxUserRegistrationChannel">
-        <int:interceptors>
-            <int:wire-tap id="inboundSandboxUserRegistrationChannelWireTapLogger"
-                          channel="sandboxUserRegistrationChannelLogger"/>
-        </int:interceptors>
-    </int:channel>
-
     <int:logging-channel-adapter
             id="sandboxUserRegistrationChannelLogger"
             level="INFO"
             logger-name="SandboxUserRegistrationChannel"
             log-full-message="true"
-    />
-
-    <int-http:inbound-gateway
-            request-channel="inboundSandboxUserRegistrationChannel"
-            reply-channel=""
-            path="/sandboxuser"
-            supported-methods="POST"
-            request-payload-type="byte[]">
-        <int-http:cross-origin/>
-    </int-http:inbound-gateway>
-
-    <int:service-activator
-            id="sandboxUserOrganizationActivator"
-            input-channel="inboundSandboxUserRegistrationChannel"
-            ref="sandboxUserRegistrationService"
-            method="registerSandboxUserOrganization"
     />
 
     <int-http:inbound-gateway
@@ -65,7 +42,6 @@
             ref="sandboxUserRegistrationService"
             method="addResourceLink"
     />
-
 
     <int-http:inbound-gateway
             request-channel="inboundSandboxUserProfileUpdateChannel"
