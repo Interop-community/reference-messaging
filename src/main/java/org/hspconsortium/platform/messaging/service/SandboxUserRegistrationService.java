@@ -75,7 +75,7 @@ public interface SandboxUserRegistrationService {
                 SandboxUserInfo sandboxUserInfo = mapper.readValue(s, SandboxUserInfo.class);
                 Attributes matchAttributes = new BasicAttributes(true); // ignore case
                 matchAttributes.put(new BasicAttribute("uid", sandboxUserInfo.getUserId()));
-//                matchAttributes.put(new BasicAttribute("cn"));
+                matchAttributes.put(new BasicAttribute("cn"));
                 User ldapUser = userService.findUser(matchAttributes, "");
                 if (ldapUser != null) {
                     ldapUser.setProfileUri(sandboxUserInfo.getProfileUrl());

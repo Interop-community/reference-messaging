@@ -114,6 +114,8 @@ public class UserService {
             if (ldapBase == null) {
                 ldapBase = "";
             }
+
+            LOGGER.info("Searching context: " + environment);
             ldapContext = new InitialDirContext(environment);
             results = ldapContext.search(ldapBase, matchAttributes);
             if (results != null) {
