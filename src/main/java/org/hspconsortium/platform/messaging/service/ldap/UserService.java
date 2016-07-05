@@ -18,6 +18,8 @@ package org.hspconsortium.platform.messaging.service.ldap;
 
 import org.hspconsortium.platform.messaging.model.ldap.DirectoryType;
 import org.hspconsortium.platform.messaging.model.ldap.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingEnumeration;
@@ -39,6 +41,9 @@ import java.util.List;
  * http://stackoverflow.com/questions/30984699/how-to-fix-java-net-socketexception-connection-reset
  */
 public class UserService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserService.class);
+
     private Hashtable<String, Object> environment;
     private DirectoryType directoryType = DirectoryType.NORMAL;
 
@@ -117,6 +122,9 @@ public class UserService {
                     return toUser(entry);
                 }
             }
+
+            LOGGER.info("No user found for attributes: " + matchAttributes);
+            return null;
         } catch (NameNotFoundException e) {
             throw new RuntimeException("The base context was not found.", e);
         } catch (NamingException e) {
@@ -137,7 +145,6 @@ public class UserService {
                 }
             }
         }
-        return null;
     }
 
     private User toUser(SearchResult entry) {

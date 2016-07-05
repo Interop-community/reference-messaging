@@ -75,16 +75,21 @@ public interface SandboxUserRegistrationService {
                 SandboxUserInfo sandboxUserInfo = mapper.readValue(s, SandboxUserInfo.class);
                 Attributes matchAttributes = new BasicAttributes(true); // ignore case
                 matchAttributes.put(new BasicAttribute("uid", sandboxUserInfo.getUserId()));
-                matchAttributes.put(new BasicAttribute("cn"));
+//                matchAttributes.put(new BasicAttribute("cn"));
                 User ldapUser = userService.findUser(matchAttributes, "");
-                ldapUser.setProfileUri(sandboxUserInfo.getProfileUrl());
-                userService.updateUser(ldapUser);
+                if (ldapUser != null) {
+                    ldapUser.setProfileUri(sandboxUserInfo.getProfileUrl());
+                    userService.updateUser(ldapUser);
 
-                logger.info(String.format("ldap attribute for %s (%s) updated with resource uri: %s"
-                        , ldapUser.getLdapEntityName()
-                        , ldapUser.getUserName()
-                        , sandboxUserInfo.getProfileUrl()));
-                return HttpServletResponse.SC_OK;
+                    logger.info(String.format("ldap attribute for %s (%s) updated with resource uri: %s"
+                            , ldapUser.getLdapEntityName()
+                            , ldapUser.getUserName()
+                            , sandboxUserInfo.getProfileUrl()));
+                    return HttpServletResponse.SC_OK;
+                }
+                else {
+                    throw new RuntimeException("Sandbox User not found: " + sandboxUserInfo);
+                }
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
