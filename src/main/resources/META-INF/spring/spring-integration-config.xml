@@ -8,6 +8,7 @@
     <import resource="spring-integration-resource-config.xml"/>
     <import resource="spring-integration-subscription-config.xml"/>
     <import resource="spring-integration-sandbox-user-config.xml"/>
+    <import resource="spring-integration-mail-sender-config.xml"/>
 
     <!-- Custom Converter -->
     <util:list id="converters">
