@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:int="http://www.springframework.org/schema/integration"
+       xmlns:int-http="http://www.springframework.org/schema/integration/http"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
+            http://www.springframework.org/schema/integration/http http://www.springframework.org/schema/integration/http/spring-integration-http.xsd">
+
+    <int:logging-channel-adapter
+            id="mailSenderChannelLogger"
+            level="INFO"
+            logger-name="MailSenderChannel"
+            log-full-message="true"
+            />
+
+    <!-- Inbound/Outbound Channels -->
+    <int:channel id="emailSenderHealthGatewayRequestChannel">
+        <int:interceptors>
+            <int:wire-tap id="mailSenderWireTapLogger"
+                          channel="mailSenderChannelLogger"/>
+        </int:interceptors>
+    </int:channel>
+
+    <int:channel id="emailSenderInboundRequestChannel">
+        <int:interceptors>
+            <int:wire-tap id="mailSenderWireTapLogger"
+                          channel="mailSenderChannelLogger"/>
+        </int:interceptors>
+    </int:channel>
+
+    <int:gateway id="requestGateway"
+                 service-interface="org.hspconsortium.platform.messaging.controller.mail.EmailController"
+            >
+        <int:method name="health" request-channel="emailSenderHealthGatewayRequestChannel">
+            <int:header name="configuredHeader" value="some header value for health method"/>
+        </int:method>
+
+        <int:method name="sendEmail" request-channel="emailSenderGatewayRequestChannel">
+            <int:header name="configuredHeader" value="some header value for send email"/>
+        </int:method>
+    </int:gateway>
+
+    <int:service-activator
+            input-channel="emailSenderHealthGatewayRequestChannel"
+            ref="mailerService"
+            method="health"
+            />
+
+    <int:service-activator
+            input-channel="emailSenderGatewayRequestChannel"
+            ref="mailerService"
+            method="sendEmail"
+            />
+
+    <!-- Inbound HTTP Mail Service Health -->
+    <int-http:inbound-gateway id="inboundHealthRequestGateway"
+                              supported-methods="GET"
+                              request-channel="emailSenderHealthGatewayRequestChannel"
+                              path="/mailsender/health"
+            />
+
+    <!-- Inbound HTTP Mail Sender -->
+    <int-http:inbound-gateway
+            request-channel="emailSenderGatewayRequestChannel"
+            path="/sandboxuser"
+            supported-methods="POST"
+            request-payload-type="org.hspconsortium.platform.messaging.model.mail.Message">
+        <int-http:cross-origin/>
+    </int-http:inbound-gateway>
+
+</beans>
