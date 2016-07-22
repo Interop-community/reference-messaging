@@ -29,7 +29,7 @@
         </int:interceptors>
     </int:channel>
 
-    <int:gateway id="requestGateway"
+    <int:gateway id="emailRestGateway"
                  service-interface="org.hspconsortium.platform.messaging.controller.mail.EmailController"
             >
         <int:method name="health" request-channel="emailSenderHealthGatewayRequestChannel">

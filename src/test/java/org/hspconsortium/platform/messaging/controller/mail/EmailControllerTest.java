@@ -4,6 +4,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.hspconsortium.platform.messaging.AppConfig;
 import org.hspconsortium.platform.messaging.Application;
+import org.hspconsortium.platform.messaging.model.mail.Message;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,8 +35,13 @@ import static org.junit.Assert.assertNotNull;
 @IntegrationTest({"server.port=8080"})
 public class EmailControllerTest {
     public static final String PNG_MIME = "image/png";
-    public static final String ATTACHMENT_FILE_FILE = "templates\\images\\logo-background.png";
+    public static final String ATTACHMENT_FILE_FILE = "templates\\images\\background.png";
+    public static final String TEMPLATE_FILE = "templates\\email-editable.html";
     public static final String EMAIL_SUBJECT = "This is a test Email Subject";
+    private static final String BACKGROUND_IMAGE = "templates\\images\\background.png";
+    private static final String LOGO_BACKGROUND_IMAGE = "templates\\images\\background.png";
+    private static final String THYMELEAF_BANNER_IMAGE = "templates\\images\\company-logo-main-web-top.png";
+    private static final String THYMELEAF_LOGO_IMAGE = "templates\\images\\company-logo.png";
 
 
     @Autowired
@@ -65,79 +71,58 @@ public class EmailControllerTest {
         boolean messageFormatHtml = false;
         org.hspconsortium.platform.messaging.model.mail.Message message = createMessage(multipart, messageFormatHtml);
         message.setTemplateName("email-text");
-        message.setTemplateFormat(org.hspconsortium.platform.messaging.model.mail.Message.TemplateFormat.TEXT);
+        message.setTemplateFormat(Message.TemplateFormat.TEXT);
         message.addAttachment("some_attachment.png", PNG_MIME, getImageFile(ATTACHMENT_FILE_FILE, "png"));
         //uncomment next two lines to send emails.
-        //Map auditInformation = gateway.sendEmail(message);
-        //assertNotNull("Expected a message", auditInformation);
+//        Map auditInformation = gateway.sendEmail(message);
+//        assertNotNull("Expected a message", auditInformation);
     }
 
     @Test
     public void testSendExternalTemplateEmail() throws Exception {
         boolean multipart = true;
-        boolean messageFormatHtml = false;
+        boolean messageFormatHtml = true;
         org.hspconsortium.platform.messaging.model.mail.Message message = createMessage(multipart, messageFormatHtml);
-        message.setTemplateName("email-text");
-        message.setTemplateFormat(org.hspconsortium.platform.messaging.model.mail.Message.TemplateFormat.TEXT);
-        //uncomment next two lines to send emails.
-        //Map auditInformation = gateway.sendEmail(message);
-        //assertNotNull("Expected a message", auditInformation);
-        //message.setTemplate(getFile(TEMPLATE_FILE));
-
-        //        message.addResource("image_of_a_friend", PNG_MIME, getImageFile(BEST_FRIEND_IMAGE_FILE, "png"));
-
+        message.setTemplate(getFile(TEMPLATE_FILE));
+        message.setTemplateFormat(Message.TemplateFormat.HTML);
 
         // Add the inline images, referenced from the HTML code as "cid:image-name"
-//        message.addResource("background", PNG_MIME, getImageFile(BACKGROUND_IMAGE, "png"));
-//        message.addResource("logo-background", PNG_MIME, getImageFile(LOGO_BACKGROUND_IMAGE, "png"));
-//        message.addResource("thymeleaf-banner", PNG_MIME, getImageFile(THYMELEAF_BANNER_IMAGE, "png"));
-//        message.addResource("thymeleaf-logo", PNG_MIME, getImageFile(THYMELEAF_LOGO_IMAGE, "png"));
+        message.addResource("background", PNG_MIME, getImageFile(BACKGROUND_IMAGE, "png"));
+        message.addResource("logo-background", PNG_MIME, getImageFile(LOGO_BACKGROUND_IMAGE, "png"));
+        message.addResource("hspc-banner", PNG_MIME, getImageFile(THYMELEAF_BANNER_IMAGE, "png"));
+        message.addResource("hspc-logo", PNG_MIME, getImageFile(THYMELEAF_LOGO_IMAGE, "png"));
+        //uncomment next two lines to send emails.
+//        Map auditInformation = gateway.sendEmail(message);
+//        assertNotNull("Expected a message", auditInformation);
     }
 
     @Test
-    public void testSendHtmlEmail() throws Exception {
+    public void testSendSimpleHtmlEmail() throws Exception {
         boolean multipart = true;
-        boolean messageFormatHtml = false;
+        boolean messageFormatHtml = true;
         org.hspconsortium.platform.messaging.model.mail.Message message = createMessage(multipart, messageFormatHtml);
-        message.setTemplateName("email-text");
-        message.setTemplateFormat(org.hspconsortium.platform.messaging.model.mail.Message.TemplateFormat.TEXT);
+        message.setTemplateName("email-simple");
+        message.setTemplateFormat(Message.TemplateFormat.HTML);
         //uncomment next two lines to send emails.
-        //Map auditInformation = gateway.sendEmail(message);
-        //assertNotNull("Expected a message", auditInformation);
-        //        message.setTemplateName("email-simple");
-
-        //        message.addResource("image_of_a_friend", PNG_MIME, getImageFile(BEST_FRIEND_IMAGE_FILE, "png"));
-
-
-        // Add the inline images, referenced from the HTML code as "cid:image-name"
-//        message.addResource("background", PNG_MIME, getImageFile(BACKGROUND_IMAGE, "png"));
-//        message.addResource("logo-background", PNG_MIME, getImageFile(LOGO_BACKGROUND_IMAGE, "png"));
-//        message.addResource("thymeleaf-banner", PNG_MIME, getImageFile(THYMELEAF_BANNER_IMAGE, "png"));
-//        message.addResource("thymeleaf-logo", PNG_MIME, getImageFile(THYMELEAF_LOGO_IMAGE, "png"));
+//        Map auditInformation = gateway.sendEmail(message);
+//        assertNotNull("Expected a message", auditInformation);
     }
 
     @Test
     public void testSendHtmlEmailWithInlineImage() throws Exception {
         boolean multipart = true;
-        boolean messageFormatHtml = false;
+        boolean messageFormatHtml = true;
         org.hspconsortium.platform.messaging.model.mail.Message message = createMessage(multipart, messageFormatHtml);
-        message.setTemplateName("email-text");
-        message.setTemplateFormat(org.hspconsortium.platform.messaging.model.mail.Message.TemplateFormat.TEXT);
+        message.setTemplateName("email-inlineimage");
+        message.setTemplateFormat(Message.TemplateFormat.HTML);
+
+        message.addVariable("imageResourceName", "image_of_a_background");
+        message.addResource("image_of_a_background", PNG_MIME, getImageFile(BACKGROUND_IMAGE, "png"));
+
         //uncomment next two lines to send emails.
-        //Map auditInformation = gateway.sendEmail(message);
-       // assertNotNull("Expected a message", auditInformation);
-//        message.setTemplateName("email-inlineimage");
+//        Map auditInformation = gateway.sendEmail(message);
+//       assertNotNull("Expected a message", auditInformation);
 
-        //       message.addVariable("imageResourceName", "image_of_a_friend");
-
-        //        message.addResource("image_of_a_friend", PNG_MIME, getImageFile(BEST_FRIEND_IMAGE_FILE, "png"));
-
-
-        // Add the inline images, referenced from the HTML code as "cid:image-name"
-//        message.addResource("background", PNG_MIME, getImageFile(BACKGROUND_IMAGE, "png"));
-//        message.addResource("logo-background", PNG_MIME, getImageFile(LOGO_BACKGROUND_IMAGE, "png"));
-//        message.addResource("thymeleaf-banner", PNG_MIME, getImageFile(THYMELEAF_BANNER_IMAGE, "png"));
-//        message.addResource("thymeleaf-logo", PNG_MIME, getImageFile(THYMELEAF_LOGO_IMAGE, "png"));
     }
 
 
@@ -149,8 +134,8 @@ public class EmailControllerTest {
         message.setTemplateName("email-text");
         message.setTemplateFormat(org.hspconsortium.platform.messaging.model.mail.Message.TemplateFormat.TEXT);
         //uncomment next two lines to send emails.
-        //Map auditInformation = gateway.sendEmail(message);
-        //assertNotNull("Expected a message", auditInformation);
+//        Map auditInformation = gateway.sendEmail(message);
+//        assertNotNull("Expected a message", auditInformation);
     }
 
     private org.hspconsortium.platform.messaging.model.mail.Message createMessage(boolean multipart, boolean messageFormatHtml) {
@@ -177,7 +162,6 @@ public class EmailControllerTest {
         try {
             ClassPathResource cpr = new ClassPathResource(pathName);
             final File tempFile = File.createTempFile(UUID.randomUUID().toString(), ".tmp");
-            //ClassLoader classLoader = new Object().getClass().getClassLoader();
             try (FileOutputStream out = new FileOutputStream(tempFile)) {
                 IOUtils.copy(cpr.getInputStream(), out);
             }
@@ -194,16 +178,18 @@ public class EmailControllerTest {
 
     private byte[] getFile(String pathName) {
         FileInputStream fileInputStream = null;
-        File file = new File(pathName);
-        byte[] bFile = new byte[(int) file.length()];
+        byte[] bFile = new byte[0];
         try {
+            ClassPathResource cpr = new ClassPathResource(pathName);
+            final File file = File.createTempFile(UUID.randomUUID().toString(), ".tmp");
+            try (FileOutputStream out = new FileOutputStream(file)) {
+                IOUtils.copy(cpr.getInputStream(), out);
+            }
+            bFile = new byte[(int) file.length()];
             //convert file into array of bytes
             fileInputStream = new FileInputStream(file);
             fileInputStream.read(bFile);
             fileInputStream.close();
-            for (int i = 0; i < bFile.length; i++) {
-                System.out.print((char) bFile[i]);
-            }
         } catch (Exception e) {
             e.printStackTrace();
         }
