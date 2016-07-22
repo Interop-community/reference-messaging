@@ -122,7 +122,6 @@ public class EmailControllerTest {
         //uncomment next two lines to send emails.
 //        Map auditInformation = gateway.sendEmail(message);
 //       assertNotNull("Expected a message", auditInformation);
-
     }
 
 

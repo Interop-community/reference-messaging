@@ -57,8 +57,11 @@
     <int-http:inbound-gateway id="inboundHealthRequestGateway"
                               supported-methods="GET"
                               request-channel="emailSenderHealthGatewayRequestChannel"
+                              request-payload-type="java.lang.String"
                               path="/mailsender/health"
-            />
+                              payload-expression="#requestParams.request">
+    </int-http:inbound-gateway>
+
 
     <!-- Inbound HTTP Mail Sender -->
     <int-http:inbound-gateway

@@ -45,37 +45,6 @@ public interface EmailSenderService {
             return String.format("http_servlet_response from %s with %s @ %s.", this.getClass().getName(), HttpServletResponse.SC_OK, request);
         }
 
-
-        /*
-         * Send plain TEXT mail
-         */
-//        @Override
-//        public void sendTextMail(
-//                final String recipientName, final String recipientEmail, final Locale locale)
-//                throws MessagingException {
-//
-//            // Prepare the evaluation context
-//            final Context ctx = new Context(locale);
-//            ctx.setVariable("name", recipientName);
-//            ctx.setVariable("subscriptionDate", new Date());
-//            ctx.setVariable("hobbies", Arrays.asList("Cinema", "Sports", "Music"));
-//
-//            // Prepare message using a Spring helper
-//            final MimeMessage mimeMessage = this.mailSender.createMimeMessage();
-//            final MimeMessageHelper message = new MimeMessageHelper(mimeMessage, "UTF-8");
-//            message.setSubject("Example plain TEXT email");
-////        message.setFrom("thymeleaf@example.com");
-//            message.setFrom("noman.rahman@imail.org");
-//            message.setTo(recipientEmail);
-//
-//            // Create the plain TEXT body using Thymeleaf
-//            final String context = this.templateEngine.process("email-text", ctx);
-//            message.setText(context);
-//
-//            // Send email
-//            this.mailSender.send(mimeMessage);
-//        }
-
         /*
          * Send HTML mail (simple)
          */
