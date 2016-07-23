@@ -1,5 +1,7 @@
 package org.hspconsortium.platform.messaging.controller.mail;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.hspconsortium.platform.messaging.AppConfig;
@@ -21,6 +23,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.UUID;
@@ -204,5 +207,14 @@ public class EmailControllerTest {
         //adding Authorization header for HTTP Basic authentication
         headers.add("Authorization", "Basic  " + base64EncodedToken);
         return headers;
+    }
+
+    private String toJson(Message message) {
+        Gson gson = new Gson();
+        Type type = new TypeToken<Message>() {}.getType();
+        String json = gson.toJson(message, type);
+        System.out.println(json);
+        Message fromJson = gson.fromJson(json, type);
+        return json;
     }
 }

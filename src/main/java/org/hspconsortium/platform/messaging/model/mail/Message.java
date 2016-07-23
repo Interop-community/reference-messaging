@@ -177,11 +177,13 @@ public class Message {
                         + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
         private static Pattern pattern = Pattern.compile(EMAIL_PATTERN);
         private static Matcher matcher;
-        private final String email;
-        private final String name;
+        private String email;
+        private String name;
         private String replyTo;
         private Locale locale = Locale.US;
 
+        public Recipient() {
+        }
 
         public Recipient(String name, String email, String replyTo, Locale locale) {
             if (!isValid(email)) {
@@ -257,6 +259,9 @@ public class Message {
         private String contentName;
         private String contentType;
         private byte[] content;
+
+        public Resource() {
+        }
 
         public Resource(String contentName, String contentType, byte[] content) {
             this.contentName = contentName;

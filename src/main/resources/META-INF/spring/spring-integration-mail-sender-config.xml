@@ -64,12 +64,11 @@
 
 
     <!-- Inbound HTTP Mail Sender -->
-    <int-http:inbound-gateway
-            request-channel="emailSenderGatewayRequestChannel"
-            path="/sandboxuser"
+    <int-http:inbound-gateway id="inboundSendMessageGateway"
             supported-methods="POST"
+            request-channel="emailSenderGatewayRequestChannel"
+            path="/mailsender"
             request-payload-type="org.hspconsortium.platform.messaging.model.mail.Message">
-        <int-http:cross-origin/>
     </int-http:inbound-gateway>
 
 </beans>
