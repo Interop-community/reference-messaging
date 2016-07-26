@@ -22,8 +22,8 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.UUID;
 
-public class EmailRestClient {
-    private static Logger logger = Logger.getLogger(EmailRestClient.class);
+public class EmailRestDemoClient {
+    private static Logger logger = Logger.getLogger(EmailRestDemoClient.class);
     public static final String PNG_MIME = "image/png";
     public static final String ATTACHMENT_FILE_FILE = "templates\\images\\background.png";
     public static final String TEMPLATE_FILE = "templates\\email-editable.html";
