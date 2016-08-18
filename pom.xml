@@ -31,6 +31,8 @@
         <commons-validator.version>1.4.1</commons-validator.version>
         <thymeleaf.version>3.0.0.RELEASE</thymeleaf.version>
         <oro.version>2.0.8</oro.version>
+        <!-- The main class to start by executing java -jar -->
+        <start-class>org.hspconsortium.platform.messaging.Application</start-class>
     </properties>
 
     <dependencies>
