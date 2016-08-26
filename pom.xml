@@ -11,7 +11,7 @@
     <name>Reference Messaging</name>
     <groupId>org.hspconsortium.reference</groupId>
     <artifactId>hspc-reference-messaging</artifactId>
-    <version>0.6-SNAPSHOT</version>
+    <version>1.0-SNAPSHOT</version>
     <packaging>war</packaging>
 
     <scm>
@@ -23,6 +23,7 @@
 
     <properties>
         <java.version>1.7</java.version>
+        <hspc.reference.messaging.common.version>1.0-SNAPSHOT</hspc.reference.messaging.common.version>
         <hapi.version>1.4</hapi.version>
         <drools.version>6.2.0.Final</drools.version>
         <javax.inject.version>1</javax.inject.version>
@@ -30,9 +31,18 @@
         <commons-validator.version>1.4.1</commons-validator.version>
         <thymeleaf.version>3.0.0.RELEASE</thymeleaf.version>
         <oro.version>2.0.8</oro.version>
+        <!-- The main class to start by executing java -jar -->
+        <start-class>org.hspconsortium.platform.messaging.Application</start-class>
     </properties>
 
     <dependencies>
+
+        <!-- mail-->
+        <dependency>
+            <groupId>org.hspconsortium.reference</groupId>
+            <artifactId>hspc-reference-messaging-common</artifactId>
+            <version>${hspc.reference.messaging.common.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -146,12 +156,6 @@
             <groupId>org.jbpm</groupId>
             <artifactId>jbpm-flow-builder</artifactId>
             <version>${drools.version}</version>
-        </dependency>
-        <!-- mail-->
-        <dependency>
-            <groupId>org.hspconsortium.reference</groupId>
-            <artifactId>hspc-reference-messaging-common</artifactId>
-            <version>0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
