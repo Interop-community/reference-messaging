@@ -14,6 +14,22 @@
             supported-methods="GET"
     />
 
+    <int:gateway id="userRestGateway"
+                 service-interface="org.hspconsortium.platform.messaging.controller.user.UserController"
+            >
+        <int:method name="health" request-channel="inboundSandboxUserHealthChannel">
+            <int:header name="configuredHeader" value="some header value for health method"/>
+        </int:method>
+
+        <int:method name="updateProfile" request-channel="inboundSandboxUserProfileUpdateChannel">
+            <int:header name="configuredHeader" value="some header value for send email"/>
+        </int:method>
+
+        <int:method name="createUser" request-channel="inboundSandboxUserCreationChannel">
+            <int:header name="configuredHeader" value="some header value for send email"/>
+        </int:method>
+    </int:gateway>
+
     <int:service-activator
             id="sandboxUserManagerServiceHealthActivator"
             input-channel="inboundSandboxUserHealthChannel"
@@ -64,4 +80,49 @@
             ref="sandboxUserRegistrationService"
             method="updateSandboxUserProfile"
     />
+
+    <int-http:inbound-gateway
+            request-channel="inboundSandboxUserCreationChannel"
+            path="/sandboxuser"
+            supported-methods="PUT"
+            request-payload-type="org.hspconsortium.platform.messaging.model.user.SandboxUserInfo">
+        <int-http:cross-origin/>
+    </int-http:inbound-gateway>
+
+    <int:channel id="inboundSandboxUserCreationChannel">
+        <int:interceptors>
+            <int:wire-tap id="inboundSandboxUserRegistrationChannelWireTapLogger"
+                          channel="sandboxUserRegistrationChannelLogger"/>
+        </int:interceptors>
+    </int:channel>
+
+    <int:service-activator
+            id="sandboxUserCreationServiceActivator"
+            input-channel="inboundSandboxUserCreationChannel"
+            ref="sandboxUserRegistrationService"
+            method="createSandboxUser"
+            />
+
+    <!-- Inbound HTTP Mail Service Health -->
+    <int-http:inbound-gateway id="inboundSandboxUserSearchRequestGateway"
+                              supported-methods="GET"
+                              request-channel="inboundSandboxUserSearchChannel"
+                              request-payload-type="java.lang.String"
+                              path="/sandboxuser/search"
+                              payload-expression="#requestParams.filter">
+    </int-http:inbound-gateway>
+
+    <int:channel id="inboundSandboxUserSearchChannel">
+        <int:interceptors>
+            <int:wire-tap id="inboundSandboxUserRegistrationChannelWireTapLogger"
+                          channel="sandboxUserRegistrationChannelLogger"/>
+        </int:interceptors>
+    </int:channel>
+
+    <int:service-activator
+            id="sandboxUserSearchServiceActivator"
+            input-channel="inboundSandboxUserSearchChannel"
+            ref="sandboxUserRegistrationService"
+            method="searchSandboxUserByProfile"
+            />
 </beans>

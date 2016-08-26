@@ -32,7 +32,6 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -42,17 +41,16 @@ import java.util.List;
  */
 public class UserService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(UserService.class);
+    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
     private Hashtable<String, Object> environment;
-    private DirectoryType directoryType = DirectoryType.NORMAL;
 
     public UserService(Hashtable<String, Object> contextEnv) {
         this.environment = contextEnv;
     }
 
     public void setDirectoryType(DirectoryType directoryType) {
-        this.directoryType = directoryType;
+        DirectoryType directoryType1 = directoryType;
     }
 
     public Iterable<User> findAll(String base) {
@@ -95,6 +93,58 @@ public class UserService {
         return resultList;
     }
 
+    public User findUser(Attributes matchAttributes, String ldapBase) {
+        User[] users = findUser(matchAttributes, ldapBase, 1);
+        if (users.length > 0)
+            return users[0];
+        else
+            return null;
+    }
+
+    public User[] findUser(String ldapBase, String filter, int total) {
+        List<User> users = new ArrayList();
+        DirContext ldapContext = null;
+        NamingEnumeration results = null;
+        try {
+            if (ldapBase == null) {
+                ldapBase = "";
+            }
+
+            ldapContext = new InitialDirContext(environment);
+            results = ldapContext.search(ldapBase, filter, null);
+            int i = 0;
+            if (results != null) {
+                while (results.hasMore() && i <= total) {
+                    SearchResult entry = (SearchResult) results.next();
+                    users.add(toUser(entry));
+                    i++;
+                }
+            } else {
+                logger.info("No user found for attributes: " + filter);
+            }
+            return users.toArray(new User[0]);
+        } catch (NameNotFoundException e) {
+            throw new RuntimeException("The base context was not found.", e);
+        } catch (NamingException e) {
+            throw new RuntimeException(e);
+        } finally {
+            if (results != null) {
+                try {
+                    results.close();
+                } catch (Exception e) {
+                    // Never mind this.
+                }
+            }
+            if (ldapContext != null) {
+                try {
+                    ldapContext.close();
+                } catch (Exception e) {
+                    // Never mind this.
+                }
+            }
+        }
+    }
+
     /**
      * Specify the attributes to match.
      * Ask for objects with the surname ("uid") attribute with the value "noman.rahman@imail.org" and the "cn" attribute.
@@ -103,10 +153,11 @@ public class UserService {
      * matchAttributes.put(new BasicAttribute("cn"));
      *
      * @param matchAttributes query attributes
-     * @param ldapBase ldap base
+     * @param ldapBase        ldap base
      * @return first matched attribute of the selected path
      */
-    public User findUser(Attributes matchAttributes, String ldapBase) {
+    public User[] findUser(Attributes matchAttributes, String ldapBase, int total) {
+        List<User> users = new ArrayList();
         // Search for objects that have those matching attributes
         DirContext ldapContext = null;
         NamingEnumeration results = null;
@@ -115,18 +166,20 @@ public class UserService {
                 ldapBase = "";
             }
 
-//            LOGGER.info("Searching context: " + environment);
+//            logger.info("Searching context: " + environment);
             ldapContext = new InitialDirContext(environment);
             results = ldapContext.search(ldapBase, matchAttributes);
+            int i = 0;
             if (results != null) {
-                while (results.hasMore()) {
+                while (results.hasMore() && i <= total) {
                     SearchResult entry = (SearchResult) results.next();
-                    return toUser(entry);
+                    users.add(toUser(entry));
+                    i++;
                 }
+            } else {
+                logger.info("No user found for attributes: " + matchAttributes);
             }
-
-            LOGGER.info("No user found for attributes: " + matchAttributes);
-            return null;
+            return users.toArray(new User[users.size()]);
         } catch (NameNotFoundException e) {
             throw new RuntimeException("The base context was not found.", e);
         } catch (NamingException e) {
@@ -167,6 +220,9 @@ public class UserService {
                 // Pull attribute name, syntax and whether attribute is binary
                 // from the annotation
                 String localAttributeName = attribute.name();
+                //donot readout password
+                if ("userPassword".equals(localAttributeName))
+                    continue;
 
                 if (!localAttributeName.isEmpty()) {
                     Attribute ldapAttribute = attributes.get(localAttributeName);
@@ -179,7 +235,7 @@ public class UserService {
                             try {
                                 throw new RuntimeException(String.format("%s needs getter/setter (%s) for annotated (attribute=%s) field %s"
                                         , user.getClass().getCanonicalName()
-                                        , pd.getWriteMethod().getName()
+                                        , pd != null ? pd.getWriteMethod().getName() : ""
                                         , ldapAttribute.get()
                                         , field.getName()
                                 ));
@@ -224,7 +280,7 @@ public class UserService {
                         try {
                             throw new RuntimeException(String.format("%s needs getter/setter (%s) for annotated (attribute = %s) field %s"
                                     , user.getClass().getCanonicalName()
-                                    , pd.getReadMethod().getName()
+                                    , pd != null ? pd.getReadMethod().getName() : ""
                                     , ldapAttribute.get()
                                     , field.getName()
                             ));
@@ -268,6 +324,71 @@ public class UserService {
         return user;
     }
 
+    public User createUser(User user) {
+        DirContext ldapContext = null;
+        Attribute ldapAttribute;
+        try {
+            Attributes attributes = new BasicAttributes(true); //case-ignore
+            ldapAttribute = new BasicAttribute("objectclass");
+            ldapAttribute.add("top");
+            ldapAttribute.add("inetOrgPerson");
+            ldapAttribute.add("person");
+            ldapAttribute.add("organizationalPerson");
+            attributes.put(ldapAttribute);
+
+            final Field[] fields = user.getClass().getDeclaredFields();
+
+            for (Field field : fields) {
+                // Grab the @Attribute annotation
+                org.hspconsortium.platform.messaging.model.ldap.annotations.Attribute fieldAttribute
+                        = field.getAnnotation(org.hspconsortium.platform.messaging.model.ldap.annotations.Attribute.class);
+
+                // Did we find the annotation?
+                if (fieldAttribute != null) {
+                    PropertyDescriptor pd = null;
+                    Object fieldValue;
+                    try {
+                        pd = new PropertyDescriptor(field.getName(), user.getClass());
+                        fieldValue = pd.getReadMethod().invoke(user);
+                        if (fieldValue != null) {
+                            ldapAttribute = new BasicAttribute(fieldAttribute.name(), fieldValue);
+                            attributes.put(ldapAttribute);
+                        }
+                    } catch (Exception e) {
+                        try {
+                            throw new RuntimeException(String.format("%s needs getter/setter (%s) for annotated (attribute = %s) field %s"
+                                    , user.getClass().getCanonicalName()
+                                    , pd != null ? pd.getReadMethod().getName() : "Property descriptor not found."
+                                    , ldapAttribute.get()
+                                    , field.getName()
+                            ));
+                        } catch (NamingException e1) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                }
+            }
+
+            if (attributes.size() > 0) {
+                ldapContext = new InitialDirContext(environment);
+                ldapContext.createSubcontext(user.getLdapEntityName(), attributes);
+            }
+        } catch (NameNotFoundException e) {
+            throw new RuntimeException("The base context was not found.", e);
+        } catch (NamingException e) {
+            throw new RuntimeException(e);
+        } finally {
+            if (ldapContext != null) {
+                try {
+                    ldapContext.close();
+                } catch (Exception e) {
+                    // Never mind this.
+                }
+            }
+        }
+        return null;
+    }
+
     public Iterable<User> searchByDistinctName(LdapName dn) {
         Attributes matchAttributes = new BasicAttributes(true); // ignore case
         List<User> resultList = new ArrayList<>();
@@ -281,10 +402,9 @@ public class UserService {
                 dn = new LdapName(remove.toString());
 
             }
-            Iterator<Rdn> attIterator = dn.getRdns().iterator();
 
-            while (attIterator.hasNext()) {
-                Attributes attributes = attIterator.next().toAttributes();
+            for (Rdn rdn : dn.getRdns()) {
+                Attributes attributes = rdn.toAttributes();
                 NamingEnumeration<String> ids = attributes.getIDs();
                 while (ids.hasMore()) {
                     matchAttributes.put(attributes.get(ids.next()));
