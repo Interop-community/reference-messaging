@@ -305,7 +305,7 @@ public class UserService {
             }
 
             if (modificationItemList.size() > 0) {
-                ldapContext = new InitialDirContext(environment);
+                //ldapContext = new InitialDirContext(environment);
                 ldapContext.modifyAttributes(user.getLdapEntityName(), modificationItemList.toArray(new ModificationItem[0]));
             }
         } catch (NameNotFoundException e) {
@@ -442,4 +442,24 @@ public class UserService {
         return resultList;
     }
 
+    public User deleteUser(User user) {
+        DirContext ldapContext = null;
+        try {
+            ldapContext = new InitialDirContext(environment);
+            ldapContext.destroySubcontext(user.getLdapEntityName());
+        } catch (NameNotFoundException e) {
+            throw new RuntimeException("The base context was not found.", e);
+        } catch (NamingException e) {
+            throw new RuntimeException(e);
+        } finally {
+            if (ldapContext != null) {
+                try {
+                    ldapContext.close();
+                } catch (Exception e) {
+                    // Never mind this.
+                }
+            }
+        }
+        return user;
+    }
 }

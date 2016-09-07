@@ -103,12 +103,12 @@
             method="createSandboxUser"
             />
 
-    <!-- Inbound HTTP Mail Service Health -->
+    <!-- Inbound HTTP Search profile -->
     <int-http:inbound-gateway id="inboundSandboxUserSearchRequestGateway"
                               supported-methods="GET"
                               request-channel="inboundSandboxUserSearchChannel"
                               request-payload-type="java.lang.String"
-                              path="/sandboxuser/search"
+                              path="/sandboxuser/search/profile"
                               payload-expression="#requestParams.filter">
     </int-http:inbound-gateway>
 
@@ -124,5 +124,74 @@
             input-channel="inboundSandboxUserSearchChannel"
             ref="sandboxUserRegistrationService"
             method="searchSandboxUserByProfile"
+            />
+
+    <!-- Inbound HTTP Search UID -->
+    <int-http:inbound-gateway id="inboundSandboxUserSearchByUidRequestGateway"
+                              supported-methods="GET"
+                              request-channel="inboundSandboxUserSearchByUidChannel"
+                              request-payload-type="java.lang.String"
+                              path="/sandboxuser/search/uid"
+                              payload-expression="#requestParams.filter">
+    </int-http:inbound-gateway>
+
+    <int:channel id="inboundSandboxUserSearchByUidChannel">
+        <int:interceptors>
+            <int:wire-tap id="inboundSandboxUserRegistrationChannelWireTapLogger"
+                          channel="sandboxUserRegistrationChannelLogger"/>
+        </int:interceptors>
+    </int:channel>
+
+    <int:service-activator
+            id="sandboxUserSearchByUidServiceActivator"
+            input-channel="inboundSandboxUserSearchByUidChannel"
+            ref="sandboxUserRegistrationService"
+            method="searchSandboxUserByUid"
+            />
+
+    <!-- Inbound HTTP Delete By uid -->
+    <int-http:inbound-gateway id="inboundSandboxUserDeleteRequestGateway"
+                              supported-methods="DELETE"
+                              request-channel="inboundSandboxUserDeleteChannel"
+                              request-payload-type="java.lang.String"
+                              path="/sandboxuser/{uid}"
+                              payload-expression="#pathVariables.uid">
+    </int-http:inbound-gateway>
+
+    <int:channel id="inboundSandboxUserDeleteChannel">
+        <int:interceptors>
+            <int:wire-tap id="inboundSandboxUserRegistrationChannelWireTapLogger"
+                          channel="sandboxUserRegistrationChannelLogger"/>
+        </int:interceptors>
+    </int:channel>
+
+    <int:service-activator
+            id="sandboxUserDeleteServiceActivator"
+            input-channel="inboundSandboxUserDeleteChannel"
+            ref="sandboxUserRegistrationService"
+            method="deleteSandboxUser"
+            />
+
+    <!-- Inbound HTTP get by uid -->
+    <int-http:inbound-gateway id="inboundSandboxUserGetByUidRequestGateway"
+                              supported-methods="GET"
+                              request-channel="inboundSandboxUserGetByUidChannel"
+                              request-payload-type="java.lang.String"
+                              path="/sandboxuser/{uid}"
+                              payload-expression="#pathVariables.uid">
+    </int-http:inbound-gateway>
+
+    <int:channel id="inboundSandboxUserGetByUidChannel">
+        <int:interceptors>
+            <int:wire-tap id="inboundSandboxUserRegistrationChannelWireTapLogger"
+                          channel="sandboxUserRegistrationChannelLogger"/>
+        </int:interceptors>
+    </int:channel>
+
+    <int:service-activator
+            id="sandboxUserGetByUidServiceActivator"
+            input-channel="inboundSandboxUserGetByUidChannel"
+            ref="sandboxUserRegistrationService"
+            method="getSandboxUser"
             />
 </beans>

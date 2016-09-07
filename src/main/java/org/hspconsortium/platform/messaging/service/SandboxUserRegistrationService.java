@@ -9,9 +9,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
+import javax.naming.InvalidNameException;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.BasicAttribute;
 import javax.naming.directory.BasicAttributes;
+import javax.naming.ldap.LdapName;
+import javax.naming.ldap.Rdn;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -37,6 +40,14 @@ public interface SandboxUserRegistrationService {
     int updateSandboxUserProfile(byte[] userInfoRequest);
 
     int createSandboxUser(SandboxUserInfo sbUser);
+
+    SandboxUserInfo getSandboxUser(String uid);
+
+    int deleteSandboxUser(String uid);
+
+    List<SandboxUserInfo> searchSandboxUserByProfile(String searchFilter);
+
+    List<SandboxUserInfo> searchSandboxUserByUid(String searchFilter);
 
     @Component
     class Impl implements SandboxUserRegistrationService {
@@ -78,8 +89,19 @@ public interface SandboxUserRegistrationService {
             try {
                 SandboxUserInfo sandboxUserInfo = mapper.readValue(s, SandboxUserInfo.class);
                 Attributes matchAttributes = new BasicAttributes(true); // ignore case
-                matchAttributes.put(new BasicAttribute("uid", sandboxUserInfo.getUserId()));
-                matchAttributes.put(new BasicAttribute("cn"));
+                try {
+                    LdapName ldapName = new LdapName(sandboxUserInfo.getDistinctName());
+                    List<Rdn> rdns = ldapName.getRdns();
+                    for (Rdn rdn : rdns ) {
+                        if (("ou".equals(rdn.getType())) || ("dc".equals(rdn.getType())))
+                            continue;
+                        matchAttributes.put(new BasicAttribute(rdn.getType(), rdn.getValue()));
+                    }
+                } catch (InvalidNameException e) {
+                    e.printStackTrace();
+                }
+//                matchAttributes.put(new BasicAttribute("uid", sandboxUserInfo.getUserId()));
+//                matchAttributes.put(new BasicAttribute("cn"));
                 User ldapUser = userService.findUser(matchAttributes, "");
                 if (ldapUser != null) {
                     ldapUser.setProfileUri(sandboxUserInfo.getProfileUrl());
@@ -144,6 +166,30 @@ public interface SandboxUserRegistrationService {
             return HttpServletResponse.SC_OK;
         }
 
+        public int deleteSandboxUser(String uid) {
+            Attributes matchAttributes = new BasicAttributes(true); // ignore case
+            matchAttributes.put(new BasicAttribute("uid", uid));
+            matchAttributes.put(new BasicAttribute("cn"));
+            User user = userService.findUser(matchAttributes, "");
+            if (user != null) {
+                userService.deleteUser(user);
+
+                logger.info(String.format("ldap attribute for %s (%s) updated with resource uri: %s"
+                        , user.getLdapEntityName()
+                        , user.getUserName()
+                        , uid));
+            }
+            return HttpServletResponse.SC_OK;
+        }
+
+        public SandboxUserInfo getSandboxUser(String uid) {
+            List<SandboxUserInfo> users = searchSandboxUserByUid(uid);
+            if (users != null && users.size() > 0) {
+                return users.get(0);
+            }
+            return null;
+        }
+
         /**
          *
          * @param searchFilter
@@ -155,6 +201,25 @@ public interface SandboxUserRegistrationService {
         public List<SandboxUserInfo> searchSandboxUserByProfile(String searchFilter) {
             List<SandboxUserInfo> userInfoList = new ArrayList();
             User[] users = userService.findUser("", String.format("(&(objectClass=inetOrgPerson)(labeledURI=*%s*))", searchFilter), 100);
+
+            for (User user : users) {
+                userInfoList.add(toSandBoxUser(user));
+            }
+            return userInfoList;
+        }
+
+
+        /**
+         *
+         * @param searchFilter
+         * @return
+         *  String filter = "(&(objectClass=inetOrgPerson)(uid=noman.rahman@imail.org))";
+         *  String filter = "(%26(objectClass=inetOrgPerson)(uid=noman.rahman@imail.org))";
+         *   searchSandboxUser(filter, 100);
+         */
+        public List<SandboxUserInfo> searchSandboxUserByUid(String searchFilter) {
+            List<SandboxUserInfo> userInfoList = new ArrayList();
+            User[] users = userService.findUser("", String.format("(&(objectClass=inetOrgPerson)(uid=*%s*))", searchFilter), 10);
 
             for (User user : users) {
                 userInfoList.add(toSandBoxUser(user));
