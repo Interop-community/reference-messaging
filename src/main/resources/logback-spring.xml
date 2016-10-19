@@ -22,8 +22,8 @@
 		</layout>
 	</appender>
 
-	<springProfile name="production"> <!--<springProfile name="production,staging">-->
-		<logger name="org.hspconsortium.platform" level="WARN">
+	<springProfile name="production">
+		<logger name="org.hspconsortium.platform" level="ERROR">
 			<appender-ref ref="HSPC_SUPPORT" />
 		</logger>
 	</springProfile>

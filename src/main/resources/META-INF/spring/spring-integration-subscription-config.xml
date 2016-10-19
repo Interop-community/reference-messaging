@@ -12,7 +12,8 @@
             request-channel="inboundSubscriptionHealthChannel"
             path="/subscription/health"
             supported-methods="GET"
-            />
+            error-channel="errorChannel"
+    />
 
     <int:service-activator
             id="subscriptionManagerServiceHealthActivator"
@@ -27,7 +28,8 @@
             reply-channel=""
             path="/subscription"
             supported-methods="GET,DELETE"
-            />
+            error-channel="errorChannel"
+    />
 
     <int:router
             input-channel="inboundSubscriptionRouterChannel"
@@ -71,7 +73,8 @@
             request-payload-type="byte[]"
             message-converters="converters"
             merge-with-default-converters="false"
-            />
+            error-channel="errorChannel"
+    />
 
     <int:service-activator
             id="subscriptionManagerServiceRegisterSubscriptionActivator"

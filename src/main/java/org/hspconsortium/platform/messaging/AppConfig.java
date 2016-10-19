@@ -414,12 +414,11 @@ public class AppConfig {
         Properties p = new Properties();
         p.put("mail.smtp.auth", mailServerAuthentication());
         p.put("mail.smtp.starttls.enable", startTls());
-        p.put("mail.smtp.quitwait", startTls());
+        p.put("mail.smtp.quitwait", quitWait());
 
         mailSender.setJavaMailProperties(p);
         return mailSender;
     }
-
 
     private boolean isUrl(String location) {
         String[] schemes = {"http", "https"};

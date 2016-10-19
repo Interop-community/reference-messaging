@@ -12,13 +12,26 @@
             request-channel="inboundSandboxUserHealthChannel"
             path="/sandboxuser/health"
             supported-methods="GET"
+            error-channel="errorChannel"
+    />
+
+    <int-http:inbound-gateway
+            request-channel="inboundSandboxUserErrorTestChannel"
+            path="/sandboxuser/errortest"
+            supported-methods="GET"
+            error-channel="errorChannel"
     />
 
     <int:gateway id="userRestGateway"
                  service-interface="org.hspconsortium.platform.messaging.controller.user.UserController"
-            >
+                 error-channel="errorChannel"
+    >
         <int:method name="health" request-channel="inboundSandboxUserHealthChannel">
             <int:header name="configuredHeader" value="some header value for health method"/>
+        </int:method>
+
+        <int:method name="errorTest" request-channel="inboundSandboxUserErrorTestChannel">
+            <int:header name="configuredHeader" value="some header value for errorTest method"/>
         </int:method>
 
         <int:method name="updateProfile" request-channel="inboundSandboxUserProfileUpdateChannel">
@@ -37,6 +50,13 @@
             method="health"
     />
 
+    <int:service-activator
+            id="sandboxUserManagerServiceErrorTestActivator"
+            input-channel="inboundSandboxUserErrorTestChannel"
+            ref="sandboxUserRegistrationService"
+            method="errorTest"
+    />
+
     <!-- Inbound HTTP Sandbox User Organization Registration Management -->
     <int:logging-channel-adapter
             id="sandboxUserRegistrationChannelLogger"
@@ -48,7 +68,9 @@
     <int-http:inbound-gateway
             request-channel="inboundSandboxUserConversionChannel"
             path="/sandboxuser/addresource"
-            supported-methods="GET">
+            supported-methods="GET"
+            error-channel="errorChannel"
+    >
         <int-http:cross-origin/>
     </int-http:inbound-gateway>
 
@@ -63,7 +85,9 @@
             request-channel="inboundSandboxUserProfileUpdateChannel"
             path="/sandboxuser/profileupdate"
             supported-methods="POST"
-            request-payload-type="byte[]">
+            request-payload-type="byte[]"
+            error-channel="errorChannel"
+    >
         <int-http:cross-origin/>
     </int-http:inbound-gateway>
 
@@ -85,7 +109,9 @@
             request-channel="inboundSandboxUserCreationChannel"
             path="/sandboxuser"
             supported-methods="PUT"
-            request-payload-type="org.hspconsortium.platform.messaging.model.user.SandboxUserInfo">
+            request-payload-type="org.hspconsortium.platform.messaging.model.user.SandboxUserInfo"
+            error-channel="errorChannel"
+    >
         <int-http:cross-origin/>
     </int-http:inbound-gateway>
 
@@ -101,7 +127,7 @@
             input-channel="inboundSandboxUserCreationChannel"
             ref="sandboxUserRegistrationService"
             method="createSandboxUser"
-            />
+    />
 
     <!-- Inbound HTTP Search profile -->
     <int-http:inbound-gateway id="inboundSandboxUserSearchRequestGateway"
@@ -109,7 +135,9 @@
                               request-channel="inboundSandboxUserSearchChannel"
                               request-payload-type="java.lang.String"
                               path="/sandboxuser/search/profile"
-                              payload-expression="#requestParams.filter">
+                              payload-expression="#requestParams.filter"
+                              error-channel="errorChannel"
+    >
     </int-http:inbound-gateway>
 
     <int:channel id="inboundSandboxUserSearchChannel">
@@ -124,7 +152,7 @@
             input-channel="inboundSandboxUserSearchChannel"
             ref="sandboxUserRegistrationService"
             method="searchSandboxUserByProfile"
-            />
+    />
 
     <!-- Inbound HTTP Search UID -->
     <int-http:inbound-gateway id="inboundSandboxUserSearchByUidRequestGateway"
@@ -132,7 +160,9 @@
                               request-channel="inboundSandboxUserSearchByUidChannel"
                               request-payload-type="java.lang.String"
                               path="/sandboxuser/search/uid"
-                              payload-expression="#requestParams.filter">
+                              payload-expression="#requestParams.filter"
+                              error-channel="errorChannel"
+    >
     </int-http:inbound-gateway>
 
     <int:channel id="inboundSandboxUserSearchByUidChannel">
@@ -147,7 +177,7 @@
             input-channel="inboundSandboxUserSearchByUidChannel"
             ref="sandboxUserRegistrationService"
             method="searchSandboxUserByUid"
-            />
+    />
 
     <!-- Inbound HTTP Delete By uid -->
     <int-http:inbound-gateway id="inboundSandboxUserDeleteRequestGateway"
@@ -155,7 +185,9 @@
                               request-channel="inboundSandboxUserDeleteChannel"
                               request-payload-type="java.lang.String"
                               path="/sandboxuser/{uid}"
-                              payload-expression="#pathVariables.uid">
+                              payload-expression="#pathVariables.uid"
+                              error-channel="errorChannel"
+    >
     </int-http:inbound-gateway>
 
     <int:channel id="inboundSandboxUserDeleteChannel">
@@ -170,7 +202,7 @@
             input-channel="inboundSandboxUserDeleteChannel"
             ref="sandboxUserRegistrationService"
             method="deleteSandboxUser"
-            />
+    />
 
     <!-- Inbound HTTP get by uid -->
     <int-http:inbound-gateway id="inboundSandboxUserGetByUidRequestGateway"
@@ -178,7 +210,9 @@
                               request-channel="inboundSandboxUserGetByUidChannel"
                               request-payload-type="java.lang.String"
                               path="/sandboxuser/{uid}"
-                              payload-expression="#pathVariables.uid">
+                              payload-expression="#pathVariables.uid"
+                              error-channel="errorChannel"
+    >
     </int-http:inbound-gateway>
 
     <int:channel id="inboundSandboxUserGetByUidChannel">
@@ -193,5 +227,5 @@
             input-channel="inboundSandboxUserGetByUidChannel"
             ref="sandboxUserRegistrationService"
             method="getSandboxUser"
-            />
+    />
 </beans>

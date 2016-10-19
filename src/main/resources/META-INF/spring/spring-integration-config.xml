@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:int="http://www.springframework.org/schema/integration"
        xmlns:util="http://www.springframework.org/schema/util"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-            http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+            http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+       http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd">
+
 
     <import resource="spring-integration-resource-config.xml"/>
     <import resource="spring-integration-subscription-config.xml"/>
@@ -14,5 +17,11 @@
     <util:list id="converters">
         <bean class="org.hspconsortium.platform.messaging.converter.HapiJsonHttpMessageConverter"/>
     </util:list>
+
+    <int:channel id = "errorChannel" />
+
+    <int:service-activator
+            input-channel="errorChannel"
+            ref="errorHandler" />
 
 </beans>

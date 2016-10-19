@@ -13,6 +13,7 @@
             request-channel="inboundResourceHealthChannel"
             path="/resource/health"
             supported-methods="GET"
+            error-channel="errorChannel"
             />
 
     <int:service-activator
@@ -30,6 +31,7 @@
             request-payload-type="byte[]"
             message-converters="converters"
             merge-with-default-converters="false"
+            error-channel="errorChannel"
             />
 
     <int:service-activator

@@ -31,6 +31,7 @@
 
     <int:gateway id="emailRestGateway"
                  service-interface="org.hspconsortium.platform.messaging.controller.mail.EmailController"
+                 error-channel="errorChannel"
             >
         <int:method name="health" request-channel="emailSenderHealthGatewayRequestChannel">
             <int:header name="configuredHeader" value="some header value for health method"/>

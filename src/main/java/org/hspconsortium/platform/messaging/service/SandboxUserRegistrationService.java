@@ -23,6 +23,8 @@ import java.util.List;
 public interface SandboxUserRegistrationService {
     String health();
 
+    String errorTest();
+
     /**
      * create a Practitioner resource url and update LDAP user account. Escape if the searchStatement url url exists.
      *
@@ -63,6 +65,11 @@ public interface SandboxUserRegistrationService {
         }
 
         @Override
+        public String errorTest() {
+            throw new RuntimeException("Error test is being executed.  This error is for testing purposes.");
+        }
+
+        @Override
         public String addResourceLink() {
             String ldapHostUri = "ldap://sandbox.hspconsortium.org";
             StringBuffer buffer = new StringBuffer("");
@@ -92,7 +99,7 @@ public interface SandboxUserRegistrationService {
                 try {
                     LdapName ldapName = new LdapName(sandboxUserInfo.getDistinctName());
                     List<Rdn> rdns = ldapName.getRdns();
-                    for (Rdn rdn : rdns ) {
+                    for (Rdn rdn : rdns) {
                         if (("ou".equals(rdn.getType())) || ("dc".equals(rdn.getType())))
                             continue;
                         matchAttributes.put(new BasicAttribute(rdn.getType(), rdn.getValue()));
@@ -121,26 +128,23 @@ public interface SandboxUserRegistrationService {
         }
 
         /**
-         *
-         * @param sbUser
-         * {
-         * "userId":"noman_rahman@imail.org",
-         * "userPassword":"modification",
-         * "email":"noman_rahman@imail.org",
-         * "organization":"Intermountain Healthcare",
-         * "organizationName":"Intermountain Healthcare Name",
-         * "distinctName":"cn\u003dbbc72236-25e6-4d8f-bdf9-4790c1e6f44e",
-         * "displayName":"Tintin",
-         * "ldapHost":"ldap://lpv-hdsvnev02.co.ihc.com:10389",
-         * "profileUrl":"https://sandbox.hspconsortium.org/dstu2/hspc-reference-api/data/Practitioner/16824",
-         * "cn":"bbc72236-25e6-4d8f-bdf9-4790c1e6f44e",
-         * "sn":"e5f77cf5-fc56-4fae-9e9a-d9eaaffa86d3",
-         * "employeeNumber":"896512",
-         * "additionalProperties":{
-         *
-         * },
-         * "firstName":"18361e77-228d-4192-82f0-002f4ec58c17"
-         * }
+         * @param sbUser {
+         *               "userId":"noman_rahman@imail.org",
+         *               "userPassword":"modification",
+         *               "email":"noman_rahman@imail.org",
+         *               "organization":"Intermountain Healthcare",
+         *               "organizationName":"Intermountain Healthcare Name",
+         *               "distinctName":"cn\u003dbbc72236-25e6-4d8f-bdf9-4790c1e6f44e",
+         *               "displayName":"Tintin",
+         *               "ldapHost":"ldap://lpv-hdsvnev02.co.ihc.com:10389",
+         *               "profileUrl":"https://sandbox.hspconsortium.org/dstu2/hspc-reference-api/data/Practitioner/16824",
+         *               "cn":"bbc72236-25e6-4d8f-bdf9-4790c1e6f44e",
+         *               "sn":"e5f77cf5-fc56-4fae-9e9a-d9eaaffa86d3",
+         *               "employeeNumber":"896512",
+         *               "additionalProperties":{
+         *               },
+         *               "firstName":"18361e77-228d-4192-82f0-002f4ec58c17"
+         *               }
          * @return
          */
         public int createSandboxUser(SandboxUserInfo sbUser) {
@@ -191,12 +195,10 @@ public interface SandboxUserRegistrationService {
         }
 
         /**
-         *
          * @param searchFilter
-         * @return
-         *  String filter = "(&(objectClass=inetOrgPerson)(labeledURI=*sandbox.hspconsortium.org/*))";
-         *  String filter = "(%26(objectClass=inetOrgPerson)(labeledURI=*sandbox.hspconsortium.org/*))";
-        *   searchSandboxUser(filter, 100);
+         * @return String filter = "(&(objectClass=inetOrgPerson)(labeledURI=*sandbox.hspconsortium.org/*))";
+         * String filter = "(%26(objectClass=inetOrgPerson)(labeledURI=*sandbox.hspconsortium.org/*))";
+         * searchSandboxUser(filter, 100);
          */
         public List<SandboxUserInfo> searchSandboxUserByProfile(String searchFilter) {
             List<SandboxUserInfo> userInfoList = new ArrayList();
@@ -210,12 +212,10 @@ public interface SandboxUserRegistrationService {
 
 
         /**
-         *
          * @param searchFilter
-         * @return
-         *  String filter = "(&(objectClass=inetOrgPerson)(uid=noman.rahman@imail.org))";
-         *  String filter = "(%26(objectClass=inetOrgPerson)(uid=noman.rahman@imail.org))";
-         *   searchSandboxUser(filter, 100);
+         * @return String filter = "(&(objectClass=inetOrgPerson)(uid=noman.rahman@imail.org))";
+         * String filter = "(%26(objectClass=inetOrgPerson)(uid=noman.rahman@imail.org))";
+         * searchSandboxUser(filter, 100);
          */
         public List<SandboxUserInfo> searchSandboxUserByUid(String searchFilter) {
             List<SandboxUserInfo> userInfoList = new ArrayList();
