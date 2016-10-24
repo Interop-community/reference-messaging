@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:remove="all">HSPC Platform Error Report</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+</head>
+<body>
+<h1>HSPC Platform Error Report</h1>
+
+<p>
+    The following error has been generated in the HSPC platform. Please see attached error for details.
+</p>
+
+<p>
+<div></div>
+<b data-th-text="${errorMessage}">Error Message</b>
+<p data-th-text="${errorDetails}">Error Details</p>
+</p>
+</body>
+</html>
