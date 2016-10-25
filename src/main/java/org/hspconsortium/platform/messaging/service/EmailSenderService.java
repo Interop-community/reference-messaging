@@ -1,6 +1,8 @@
 package org.hspconsortium.platform.messaging.service;
 
 import org.hspconsortium.platform.messaging.model.mail.Message;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.InputStreamSource;
@@ -27,6 +29,8 @@ public interface EmailSenderService {
 
     @Component
     public static class Impl implements EmailSenderService {
+
+        private static final Logger logger = LoggerFactory.getLogger(EmailSenderService.Impl.class);
 
         @Autowired
         private JavaMailSender mailSender;
@@ -104,7 +108,11 @@ public interface EmailSenderService {
                     }
                 }
                 // Send email
-                this.mailSender.send(mimeMessage);
+                try {
+                    this.mailSender.send(mimeMessage);
+                } catch (Exception e) {
+                    logger.error("Error sending email message", e);
+                }
                 if (emailMessage.isAuditEnabled())
                     auditMap.put(mimeMessage.getRecipients(javax.mail.Message.RecipientType.TO)[0].toString()
                             , mimeMessage.getReplyTo()[0].toString());
