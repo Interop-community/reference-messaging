@@ -12,19 +12,16 @@
             request-channel="inboundSandboxUserHealthChannel"
             path="/sandboxuser/health"
             supported-methods="GET"
-            error-channel="errorChannel"
     />
 
     <int-http:inbound-gateway
             request-channel="inboundSandboxUserErrorTestChannel"
             path="/sandboxuser/errortest"
             supported-methods="GET"
-            error-channel="errorChannel"
     />
 
     <int:gateway id="userRestGateway"
                  service-interface="org.hspconsortium.platform.messaging.controller.user.UserController"
-                 error-channel="errorChannel"
     >
         <int:method name="health" request-channel="inboundSandboxUserHealthChannel">
             <int:header name="configuredHeader" value="some header value for health method"/>
@@ -69,7 +66,6 @@
             request-channel="inboundSandboxUserConversionChannel"
             path="/sandboxuser/addresource"
             supported-methods="GET"
-            error-channel="errorChannel"
     >
         <int-http:cross-origin/>
     </int-http:inbound-gateway>
@@ -86,7 +82,6 @@
             path="/sandboxuser/profileupdate"
             supported-methods="POST"
             request-payload-type="byte[]"
-            error-channel="errorChannel"
     >
         <int-http:cross-origin/>
     </int-http:inbound-gateway>
@@ -110,7 +105,6 @@
             path="/sandboxuser"
             supported-methods="PUT"
             request-payload-type="org.hspconsortium.platform.messaging.model.user.SandboxUserInfo"
-            error-channel="errorChannel"
     >
         <int-http:cross-origin/>
     </int-http:inbound-gateway>
@@ -136,7 +130,6 @@
                               request-payload-type="java.lang.String"
                               path="/sandboxuser/search/profile"
                               payload-expression="#requestParams.filter"
-                              error-channel="errorChannel"
     >
     </int-http:inbound-gateway>
 
@@ -161,7 +154,6 @@
                               request-payload-type="java.lang.String"
                               path="/sandboxuser/search/uid"
                               payload-expression="#requestParams.filter"
-                              error-channel="errorChannel"
     >
     </int-http:inbound-gateway>
 
@@ -186,7 +178,6 @@
                               request-payload-type="java.lang.String"
                               path="/sandboxuser/{uid}"
                               payload-expression="#pathVariables.uid"
-                              error-channel="errorChannel"
     >
     </int-http:inbound-gateway>
 
@@ -211,7 +202,6 @@
                               request-payload-type="java.lang.String"
                               path="/sandboxuser/{uid}"
                               payload-expression="#pathVariables.uid"
-                              error-channel="errorChannel"
     >
     </int-http:inbound-gateway>
 
