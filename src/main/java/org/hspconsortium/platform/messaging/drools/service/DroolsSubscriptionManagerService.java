@@ -1,6 +1,7 @@
 package org.hspconsortium.platform.messaging.drools.service;
 
 import ca.uhn.fhir.model.api.IResource;
+import ca.uhn.fhir.model.dstu2.resource.CarePlan;
 import ca.uhn.fhir.model.dstu2.resource.Observation;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
 import ca.uhn.fhir.model.dstu2.resource.Subscription;
@@ -12,6 +13,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.hspconsortium.platform.messaging.drools.factory.RuleFromSubscriptionFactory;
+import org.hspconsortium.platform.messaging.model.CarePlanRoutingContainer;
 import org.hspconsortium.platform.messaging.model.ObservationRoutingContainer;
 import org.hspconsortium.platform.messaging.model.PatientRoutingContainer;
 import org.hspconsortium.platform.messaging.model.ResourceRoutingContainer;
@@ -98,6 +100,8 @@ public class DroolsSubscriptionManagerService implements SubscriptionManagerServ
         ResourceRoutingContainer resourceRoutingContainer;
         if (resource instanceof Observation) {
             resourceRoutingContainer = new ObservationRoutingContainer((Observation) resource);
+        } else if (resource instanceof CarePlan) {
+                resourceRoutingContainer = new CarePlanRoutingContainer((CarePlan) resource);
         } else if (resource instanceof Patient) {
             resourceRoutingContainer = new PatientRoutingContainer((Patient) resource);
         } else {

@@ -15,6 +15,8 @@ public class RuleFromSubscriptionFactory {
                 return createPatientDroolsRule(subscription);
             case "Observation":
                 return createObservationDroolsRule(subscription);
+            case "CarePlan":
+                return createCarePlanDroolsRule(subscription);
             default:
                 throw new RuntimeException("Unsupported resource for criteria: " + subscription.getCriteria());
         }
@@ -73,6 +75,26 @@ public class RuleFromSubscriptionFactory {
             stringBuffer.append("              && getObservation().getCode().getCodingFirstRep() != null\n");
             stringBuffer.append("              && getObservation().getCode().getCodingFirstRep().getCode() == \"" + codeOption + "\"\n");
         }
+        stringBuffer.append("            )\n");
+        stringBuffer.append("    then\n");
+        stringBuffer.append("        $c.addDestinationChannel(\"" + subscription.getChannel().getEndpoint() + "\");\n");
+        stringBuffer.append("end\n");
+        return stringBuffer.toString();
+    }
+
+    private String createCarePlanDroolsRule(Subscription subscription) {
+        // create a drl based on the subscription
+        String codeOption = getCriteria("code", getCriteriaOptions(subscription.getCriteria()));
+
+        // todo add support for actual criteria
+        StringBuffer stringBuffer = new StringBuffer();
+        stringBuffer.append("package org.hspconsortium.platform.messaging\n");
+        stringBuffer.append("dialect \"mvel\"\n");
+        stringBuffer.append("import org.hspconsortium.platform.messaging.model.ResourceRoutingContainer\n");
+        stringBuffer.append("import org.hspconsortium.platform.messaging.model.CarePlanRoutingContainer\n");
+        stringBuffer.append("rule \"Subscription rule: " + subscription.getId().getIdPart() + "\"\n");
+        stringBuffer.append("    when\n");
+        stringBuffer.append("        $c: CarePlanRoutingContainer(\n");
         stringBuffer.append("            )\n");
         stringBuffer.append("    then\n");
         stringBuffer.append("        $c.addDestinationChannel(\"" + subscription.getChannel().getEndpoint() + "\");\n");
