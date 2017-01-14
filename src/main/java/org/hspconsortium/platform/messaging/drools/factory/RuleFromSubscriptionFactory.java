@@ -1,6 +1,6 @@
 package org.hspconsortium.platform.messaging.drools.factory;
 
-import ca.uhn.fhir.model.dstu2.resource.Subscription;
+import org.hl7.fhir.dstu3.model.Subscription;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -47,7 +47,7 @@ public class RuleFromSubscriptionFactory {
         stringBuffer.append("dialect \"mvel\"\n");
         stringBuffer.append("import org.hspconsortium.platform.messaging.model.ResourceRoutingContainer\n");
         stringBuffer.append("import org.hspconsortium.platform.messaging.model.PatientRoutingContainer\n");
-        stringBuffer.append("rule \"Subscription rule: " + subscription.getId().getIdPart() + "\"\n");
+        stringBuffer.append("rule \"Subscription rule: " + subscription.getId() + "\"\n");
         stringBuffer.append("    when\n");
         stringBuffer.append("        $c: PatientRoutingContainer()");
         stringBuffer.append("    then\n");
@@ -66,7 +66,7 @@ public class RuleFromSubscriptionFactory {
         stringBuffer.append("dialect \"mvel\"\n");
         stringBuffer.append("import org.hspconsortium.platform.messaging.model.ResourceRoutingContainer\n");
         stringBuffer.append("import org.hspconsortium.platform.messaging.model.ObservationRoutingContainer\n");
-        stringBuffer.append("rule \"Subscription rule: " + subscription.getId().getIdPart() + "\"\n");
+        stringBuffer.append("rule \"Subscription rule: " + subscription.getId() + "\"\n");
         stringBuffer.append("    when\n");
         stringBuffer.append("        $c: ObservationRoutingContainer(\n");
         // todo this hard-coding is just for the demo
@@ -92,7 +92,7 @@ public class RuleFromSubscriptionFactory {
         stringBuffer.append("dialect \"mvel\"\n");
         stringBuffer.append("import org.hspconsortium.platform.messaging.model.ResourceRoutingContainer\n");
         stringBuffer.append("import org.hspconsortium.platform.messaging.model.CarePlanRoutingContainer\n");
-        stringBuffer.append("rule \"Subscription rule: " + subscription.getId().getIdPart() + "\"\n");
+        stringBuffer.append("rule \"Subscription rule: " + subscription.getId() + "\"\n");
         stringBuffer.append("    when\n");
         stringBuffer.append("        $c: CarePlanRoutingContainer(\n");
         stringBuffer.append("            )\n");

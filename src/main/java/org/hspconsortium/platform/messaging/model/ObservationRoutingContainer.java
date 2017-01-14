@@ -1,7 +1,8 @@
 package org.hspconsortium.platform.messaging.model;
 
-import ca.uhn.fhir.model.api.IResource;
-import ca.uhn.fhir.model.dstu2.resource.Observation;
+
+import org.hl7.fhir.dstu3.model.Observation;
+import org.hl7.fhir.instance.model.api.IDomainResource;
 
 import java.io.Serializable;
 
@@ -15,7 +16,7 @@ public class ObservationRoutingContainer extends ResourceRoutingContainer implem
     }
 
     @Override
-    public IResource getResource() {
+    public IDomainResource getResource() {
         return getObservation();
     }
 

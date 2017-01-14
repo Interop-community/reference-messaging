@@ -1,8 +1,8 @@
 package org.hspconsortium.platform.messaging.model;
 
-import ca.uhn.fhir.model.api.IResource;
-import ca.uhn.fhir.model.dstu2.resource.Patient;
 import org.apache.commons.lang3.Validate;
+import org.hl7.fhir.dstu3.model.Patient;
+import org.hl7.fhir.instance.model.api.IDomainResource;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -23,7 +23,7 @@ public class PatientRoutingContainer extends ResourceRoutingContainer implements
     }
 
     @Override
-    public IResource getResource() {
+    public IDomainResource getResource() {
         return getPatient();
     }
 

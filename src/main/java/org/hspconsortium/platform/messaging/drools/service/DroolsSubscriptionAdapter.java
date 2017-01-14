@@ -1,8 +1,8 @@
 package org.hspconsortium.platform.messaging.drools.service;
 
 import ca.uhn.fhir.context.FhirContext;
-import ca.uhn.fhir.model.api.IResource;
 import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.hl7.fhir.instance.model.api.IDomainResource;
 import org.hspconsortium.platform.messaging.service.SubscriptionManagerService;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +15,7 @@ public class DroolsSubscriptionAdapter {
     SubscriptionManagerService subscriptionManagerService;
 
     public void submitResource(String resourceJson) {
-        IBaseResource resource = FhirContext.forDstu2().newJsonParser().parseResource(resourceJson);
-        subscriptionManagerService.submitResource((IResource)resource);
+        IBaseResource resource = FhirContext.forDstu3().newJsonParser().parseResource(resourceJson);
+        subscriptionManagerService.submitResource((IDomainResource)resource);
     }
 }

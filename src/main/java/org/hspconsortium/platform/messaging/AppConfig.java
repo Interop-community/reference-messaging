@@ -214,8 +214,8 @@ public class AppConfig {
     }
 
     @Bean
-    public AccessTokenProvider tokenProvider(FhirContext fhirContext) {
-        return new JsonAccessTokenProvider(fhirContext);
+    public AccessTokenProvider tokenProvider() {
+        return new JsonAccessTokenProvider();
     }
 
     @Bean
@@ -243,7 +243,7 @@ public class AppConfig {
     public FhirContext fhirContext(Integer httpConnectionTimeOut, Integer httpReadTimeOut
             , String proxyHost, Integer proxyPort
             , String proxyUser, String proxyPassword) {
-        FhirContext hapiFhirContext = FhirContext.forDstu2();
+        FhirContext hapiFhirContext = FhirContext.forDstu3();
         // Set how long to try and establish the initial TCP connection (in ms)
         hapiFhirContext.getRestfulClientFactory().setConnectTimeout(httpConnectionTimeOut);
 

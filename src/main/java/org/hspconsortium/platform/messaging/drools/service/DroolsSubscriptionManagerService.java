@@ -1,10 +1,5 @@
 package org.hspconsortium.platform.messaging.drools.service;
 
-import ca.uhn.fhir.model.api.IResource;
-import ca.uhn.fhir.model.dstu2.resource.CarePlan;
-import ca.uhn.fhir.model.dstu2.resource.Observation;
-import ca.uhn.fhir.model.dstu2.resource.Patient;
-import ca.uhn.fhir.model.dstu2.resource.Subscription;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -12,6 +7,11 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.hl7.fhir.dstu3.model.CarePlan;
+import org.hl7.fhir.dstu3.model.Observation;
+import org.hl7.fhir.dstu3.model.Patient;
+import org.hl7.fhir.dstu3.model.Subscription;
+import org.hl7.fhir.instance.model.api.IDomainResource;
 import org.hspconsortium.platform.messaging.drools.factory.RuleFromSubscriptionFactory;
 import org.hspconsortium.platform.messaging.model.CarePlanRoutingContainer;
 import org.hspconsortium.platform.messaging.model.ObservationRoutingContainer;
@@ -96,7 +96,7 @@ public class DroolsSubscriptionManagerService implements SubscriptionManagerServ
     }
 
     @Override
-    public String submitResource(IResource resource) {
+    public String submitResource(IDomainResource resource) {
         ResourceRoutingContainer resourceRoutingContainer;
         if (resource instanceof Observation) {
             resourceRoutingContainer = new ObservationRoutingContainer((Observation) resource);

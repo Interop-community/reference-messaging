@@ -11,7 +11,7 @@
     <name>Reference Messaging</name>
     <groupId>org.hspconsortium.reference</groupId>
     <artifactId>hspc-reference-messaging</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.1-SNAPSHOT</version>
     <packaging>war</packaging>
 
     <scm>
@@ -23,11 +23,11 @@
 
     <properties>
         <java.version>1.8</java.version>
-        <hspc.reference.messaging.common.version>1.0-SNAPSHOT</hspc.reference.messaging.common.version>
+        <reference-messaging.version>1.1-SNAPSHOT</reference-messaging.version>
         <hapi.version>2.2</hapi.version>
         <drools.version>6.2.0.Final</drools.version>
         <javax.inject.version>1</javax.inject.version>
-        <hspc-java-client.version>1.2</hspc-java-client.version>
+        <hspc-java-client.version>1.6-SNAPSHOT</hspc-java-client.version>
         <commons-validator.version>1.4.1</commons-validator.version>
         <thymeleaf.version>3.0.0.RELEASE</thymeleaf.version>
         <oro.version>2.0.8</oro.version>
@@ -41,7 +41,7 @@
         <dependency>
             <groupId>org.hspconsortium.reference</groupId>
             <artifactId>hspc-reference-messaging-common</artifactId>
-            <version>${hspc.reference.messaging.common.version}</version>
+            <version>${reference-messaging.version}</version>
         </dependency>
 
         <dependency>
@@ -99,7 +99,7 @@
         <!-- FHIR DSTU2 Structures Jar -->
         <dependency>
             <groupId>ca.uhn.hapi.fhir</groupId>
-            <artifactId>hapi-fhir-structures-dstu2</artifactId>
+            <artifactId>hapi-fhir-structures-dstu3</artifactId>
             <version>${hapi.version}</version>
         </dependency>
 

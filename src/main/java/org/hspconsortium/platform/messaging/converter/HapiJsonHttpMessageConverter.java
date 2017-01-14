@@ -20,7 +20,7 @@ import java.nio.charset.Charset;
 public class HapiJsonHttpMessageConverter extends AbstractHttpMessageConverter<Object>
         implements GenericHttpMessageConverter<Object> {
 
-    private static final FhirContext FHIR_CONTEXT = FhirContext.forDstu2();
+    private static final FhirContext FHIR_CONTEXT = FhirContext.forDstu3();
 
     public static final Charset DEFAULT_CHARSET = Charset.forName("UTF-8");
 

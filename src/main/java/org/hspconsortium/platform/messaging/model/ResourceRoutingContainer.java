@@ -1,6 +1,6 @@
 package org.hspconsortium.platform.messaging.model;
 
-import ca.uhn.fhir.model.api.IResource;
+import org.hl7.fhir.instance.model.api.IDomainResource;
 
 import java.util.Date;
 import java.util.LinkedList;
@@ -28,5 +28,5 @@ public abstract class ResourceRoutingContainer {
         destinationChannels.add(destinationChannel);
     }
 
-    public abstract IResource getResource();
+    public abstract IDomainResource getResource();
 }
