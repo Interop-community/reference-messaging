@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.InputStreamSource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -20,12 +21,13 @@ import java.util.Map;
 import java.util.UUID;
 
 public interface EmailSenderService {
-    public static final String ENCODING = "UTF-8";
+    static final String ENCODING = "UTF-8";
 
-    public String health(String request);
+    String health(String request);
 
-    public Map sendEmail(Message message) throws MessagingException;
+    Map sendEmail(Message message) throws MessagingException;
 
+    Map sendEmailTest(String body) throws MessagingException;
 
     @Component
     public static class Impl implements EmailSenderService {
@@ -120,6 +122,38 @@ public interface EmailSenderService {
                     auditMap.put(mimeMessage.getRecipients(javax.mail.Message.RecipientType.TO)[0].toString()
                             , emailMessage.getSenderEmail());
             }
+            return auditMap;
+        }
+
+        /*
+         * Send HTML mail (simple)
+         */
+        @Override
+        public Map sendEmailTest(String body)
+                throws MessagingException {
+            Map auditMap = new HashMap();
+
+            Message.Recipient recipient = new Message.Recipient("Patricia Primary, MD", "travis@isalussolutions.com");
+
+            // Prepare messageHelper using a Spring helper
+            final MimeMessage mimeMessage = this.mailSender.createMimeMessage();
+            final MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+
+            messageHelper.setSubject("CarePlan Has Been Updated");
+            messageHelper.setFrom("no-reply@hspconsortium.org");
+            messageHelper.setTo(recipient.getEmail());
+            messageHelper.setReplyTo("no-reply@hspconsortium.org");
+            messageHelper.setText("<img src='cid:myLogo' width='325px' height='55px'><br/>HSPConsortium.org Email Notification System<br/><br/><h1>CarePlan has been update.</h1><br/><br/>Click <a href='https://sandbox.hspconsortium.org'>here</a> to access the HSPC Sandbox.", true);
+            messageHelper.addInline("myLogo", new ClassPathResource("templates/images/company-logo-main-web-top.png"));
+
+            // Send email
+            try {
+                this.mailSender.send(mimeMessage);
+            } catch (Exception e) {
+                logger.error("Error sending email message", e);
+            }
+
+            auditMap.put(mimeMessage.getRecipients(javax.mail.Message.RecipientType.TO)[0].toString(), recipient.getEmail());
             return auditMap;
         }
     }

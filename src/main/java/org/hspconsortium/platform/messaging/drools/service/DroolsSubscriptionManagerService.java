@@ -12,6 +12,7 @@ import org.hl7.fhir.dstu3.model.Observation;
 import org.hl7.fhir.dstu3.model.Patient;
 import org.hl7.fhir.dstu3.model.Subscription;
 import org.hl7.fhir.instance.model.api.IDomainResource;
+import org.hspconsortium.platform.messaging.converter.ResourceStringConverter;
 import org.hspconsortium.platform.messaging.drools.factory.RuleFromSubscriptionFactory;
 import org.hspconsortium.platform.messaging.model.CarePlanRoutingContainer;
 import org.hspconsortium.platform.messaging.model.ObservationRoutingContainer;
@@ -47,6 +48,8 @@ public class DroolsSubscriptionManagerService implements SubscriptionManagerServ
     @Inject
     KnowledgeBase knowledgeBase;
 
+    ResourceStringConverter resourceStringConverter = new ResourceStringConverter();
+
     @Override
     public String health() {
         return knowledgeBase != null ? "OK" : "Not Initialized";
@@ -69,7 +72,8 @@ public class DroolsSubscriptionManagerService implements SubscriptionManagerServ
     }
 
     @Override
-    public void registerSubscription(Subscription subscription) {
+    public String registerSubscription(String subscriptionStr) {
+        Subscription subscription = (Subscription)resourceStringConverter.toResource(subscriptionStr);
         String strDrl = ruleFromSubscriptionFactory.create(subscription);
 
         KnowledgeBuilder kbuilder = KnowledgeBuilderFactory.newKnowledgeBuilder();
@@ -93,6 +97,8 @@ public class DroolsSubscriptionManagerService implements SubscriptionManagerServ
         knowledgeBase.addKnowledgePackages(kbuilder.getKnowledgePackages());
 
         logger.info("Subscription registration successful");
+
+        return "Ok";
     }
 
     @Override

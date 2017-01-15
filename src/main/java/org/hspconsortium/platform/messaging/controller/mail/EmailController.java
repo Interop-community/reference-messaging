@@ -20,4 +20,6 @@ public interface EmailController {
             , final MultipartFile[] attachment
             , final MultipartFile[] resources
             , final Locale locale);
+
+    Map<String, String> sendEmailTest(String body);
 }

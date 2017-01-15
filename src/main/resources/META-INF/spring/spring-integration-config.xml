@@ -13,11 +13,6 @@
     <import resource="spring-integration-sandbox-user-config.xml"/>
     <import resource="spring-integration-mail-sender-config.xml"/>
 
-    <!-- Custom Converter -->
-    <util:list id="converters">
-        <bean class="org.hspconsortium.platform.messaging.converter.HapiJsonHttpMessageConverter"/>
-    </util:list>
-
     <int:channel id = "errorChannel" />
 
     <int:service-activator

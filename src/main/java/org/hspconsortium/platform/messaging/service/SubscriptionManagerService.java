@@ -1,6 +1,5 @@
 package org.hspconsortium.platform.messaging.service;
 
-import org.hl7.fhir.dstu3.model.Subscription;
 import org.hl7.fhir.instance.model.api.IDomainResource;
 
 public interface SubscriptionManagerService {
@@ -9,7 +8,7 @@ public interface SubscriptionManagerService {
 
     String asString();
 
-    void registerSubscription(Subscription subscription);
+    String registerSubscription(String subscriptionStr);
 
     String submitResource(IDomainResource resource);
 

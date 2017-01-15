@@ -14,8 +14,9 @@ public class DroolsSubscriptionAdapter {
     @Inject
     SubscriptionManagerService subscriptionManagerService;
 
-    public void submitResource(String resourceJson) {
+    public String submitResource(String resourceJson) {
         IBaseResource resource = FhirContext.forDstu3().newJsonParser().parseResource(resourceJson);
         subscriptionManagerService.submitResource((IDomainResource)resource);
+        return "Ok";
     }
 }

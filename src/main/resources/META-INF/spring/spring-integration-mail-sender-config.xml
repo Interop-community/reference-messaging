@@ -40,6 +40,10 @@
         <int:method name="sendEmail" request-channel="emailSenderGatewayRequestChannel">
             <int:header name="configuredHeader" value="some header value for send email"/>
         </int:method>
+
+        <int:method name="sendEmailTest" request-channel="emailSenderTestGatewayRequestChannel">
+            <int:header name="configuredHeader" value="some header value for send email"/>
+        </int:method>
     </int:gateway>
 
     <int:service-activator
@@ -54,6 +58,12 @@
             method="sendEmail"
             />
 
+    <int:service-activator
+            input-channel="emailSenderTestGatewayRequestChannel"
+            ref="mailerService"
+            method="sendEmailTest"
+            />
+
     <!-- Inbound HTTP Mail Service Health -->
     <int-http:inbound-gateway id="inboundHealthRequestGateway"
                               supported-methods="GET"
@@ -66,10 +76,17 @@
 
     <!-- Inbound HTTP Mail Sender -->
     <int-http:inbound-gateway id="inboundSendMessageGateway"
-            supported-methods="POST"
-            request-channel="emailSenderGatewayRequestChannel"
-            path="/mailsender"
-            request-payload-type="org.hspconsortium.platform.messaging.model.mail.Message">
+                              supported-methods="POST"
+                              request-channel="emailSenderGatewayRequestChannel"
+                              path="/mailsender"
+                              request-payload-type="org.hspconsortium.platform.messaging.model.mail.Message">
+    </int-http:inbound-gateway>
+
+    <!-- Inbound HTTP Mail Sender Test -->
+    <int-http:inbound-gateway id="inboundSendMessageGateway"
+                              supported-methods="POST"
+                              request-channel="emailSenderTestGatewayRequestChannel"
+                              path="/mailsendertest">
     </int-http:inbound-gateway>
 
 </beans>
