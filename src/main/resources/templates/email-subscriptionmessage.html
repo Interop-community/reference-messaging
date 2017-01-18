@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <title th:remove="all">HSPC Subscription Message</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    </head>
+    <body>
+        <img src="images/company-logo-main-web-top.png" data-th-src="|cid:company-logo|" />
+
+        <h1 data-th-text="${resourceTypeStatement}">Resource Type Changed</h1>
+
+        <p>
+            You are receiving this message because you are subscribed to a resource that has been added or modified.
+        </p>
+
+        <p>
+            Click <a href="https://sandbox.hspconsortium.org">here</a> to sign into the HSPC Sandbox.
+        </p>
+    </body>
+</html>

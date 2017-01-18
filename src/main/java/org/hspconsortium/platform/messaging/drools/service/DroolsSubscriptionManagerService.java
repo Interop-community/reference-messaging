@@ -1,5 +1,6 @@
 package org.hspconsortium.platform.messaging.drools.service;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -12,12 +13,14 @@ import org.hl7.fhir.dstu3.model.Observation;
 import org.hl7.fhir.dstu3.model.Patient;
 import org.hl7.fhir.dstu3.model.Subscription;
 import org.hl7.fhir.instance.model.api.IDomainResource;
+import org.hspconsortium.platform.messaging.controller.mail.EmailController;
 import org.hspconsortium.platform.messaging.converter.ResourceStringConverter;
 import org.hspconsortium.platform.messaging.drools.factory.RuleFromSubscriptionFactory;
 import org.hspconsortium.platform.messaging.model.CarePlanRoutingContainer;
 import org.hspconsortium.platform.messaging.model.ObservationRoutingContainer;
 import org.hspconsortium.platform.messaging.model.PatientRoutingContainer;
 import org.hspconsortium.platform.messaging.model.ResourceRoutingContainer;
+import org.hspconsortium.platform.messaging.model.mail.Message;
 import org.hspconsortium.platform.messaging.service.SubscriptionManagerService;
 import org.kie.api.definition.rule.Rule;
 import org.kie.api.io.ResourceType;
@@ -31,22 +34,37 @@ import org.kie.internal.io.ResourceFactory;
 import org.kie.internal.runtime.StatefulKnowledgeSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
+import javax.imageio.ImageIO;
 import javax.inject.Inject;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.util.Map;
+import java.util.UUID;
+
+import static org.hspconsortium.platform.messaging.controller.mail.EmailRestDemoClient.PNG_MIME;
 
 @Service
 public class DroolsSubscriptionManagerService implements SubscriptionManagerService {
 
-    private static final Logger logger = LoggerFactory.getLogger(DroolsSubscriptionManagerService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DroolsSubscriptionManagerService.class);
+
+    private static final String HSPC_LOGO_IMAGE = "templates\\images\\company-logo-main-web-top.png";
 
     @Inject
     RuleFromSubscriptionFactory ruleFromSubscriptionFactory;
 
     @Inject
+    EmailController gateway;
+
+    @Inject
     KnowledgeBase knowledgeBase;
+
+    @Value("${mail.server.sender.address}")
+    private String defaultSenderAddress;
 
     ResourceStringConverter resourceStringConverter = new ResourceStringConverter();
 
@@ -73,7 +91,7 @@ public class DroolsSubscriptionManagerService implements SubscriptionManagerServ
 
     @Override
     public String registerSubscription(String subscriptionStr) {
-        Subscription subscription = (Subscription)resourceStringConverter.toResource(subscriptionStr);
+        Subscription subscription = (Subscription) resourceStringConverter.toResource(subscriptionStr);
         String strDrl = ruleFromSubscriptionFactory.create(subscription);
 
         KnowledgeBuilder kbuilder = KnowledgeBuilderFactory.newKnowledgeBuilder();
@@ -88,7 +106,7 @@ public class DroolsSubscriptionManagerService implements SubscriptionManagerServ
 
         if (errors.size() > 0) {
             for (KnowledgeBuilderError error : errors) {
-                System.err.println(error);
+                LOGGER.error("Error in DRL: " + error.toString());
             }
             throw new IllegalArgumentException("Could not parse knowledge.");
         }
@@ -96,7 +114,7 @@ public class DroolsSubscriptionManagerService implements SubscriptionManagerServ
         // add this rule to the commonly shared knowledge base
         knowledgeBase.addKnowledgePackages(kbuilder.getKnowledgePackages());
 
-        logger.info("Subscription registration successful");
+        LOGGER.info("Subscription registration successful");
 
         return "Ok";
     }
@@ -107,7 +125,7 @@ public class DroolsSubscriptionManagerService implements SubscriptionManagerServ
         if (resource instanceof Observation) {
             resourceRoutingContainer = new ObservationRoutingContainer((Observation) resource);
         } else if (resource instanceof CarePlan) {
-                resourceRoutingContainer = new CarePlanRoutingContainer((CarePlan) resource);
+            resourceRoutingContainer = new CarePlanRoutingContainer((CarePlan) resource);
         } else if (resource instanceof Patient) {
             resourceRoutingContainer = new PatientRoutingContainer((Patient) resource);
         } else {
@@ -141,25 +159,91 @@ public class DroolsSubscriptionManagerService implements SubscriptionManagerServ
 
     // replace this with camel route
     private void sendSubscriptionMessage(ResourceRoutingContainer resourceRoutingContainer) {
-        for (String destinationChannel : resourceRoutingContainer.getDestinationChannels()) {
-            try {
-                HttpPost postRequest = new HttpPost(destinationChannel);
-                StringEntity resourceIdEntity = new StringEntity(resourceRoutingContainer.getResource().getId().toString());
-                postRequest.setEntity(resourceIdEntity);
-
-                CloseableHttpClient httpClient = HttpClients.custom().build();
-                CloseableHttpResponse closeableHttpResponse = httpClient.execute(postRequest);
-                if (closeableHttpResponse.getStatusLine().getStatusCode() != 200) {
-                    HttpEntity rEntity = closeableHttpResponse.getEntity();
-                    String responseString = EntityUtils.toString(rEntity, "UTF-8");
-                    throw new RuntimeException(
-                            "Error sending the subscription message to: " + resourceRoutingContainer.getDestinationChannels()
-                                    + " Response Status : " + closeableHttpResponse.getStatusLine()
-                                    + " Response Detail: " + responseString);
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+        for (Subscription.SubscriptionChannelComponent destinationChannel : resourceRoutingContainer.getDestinationChannels()) {
+            LOGGER.info("Sending subscription message for: " + destinationChannel.getEndpoint());
+            switch (destinationChannel.getType()) {
+                case EMAIL:
+                    sendEmailChannelMessage(destinationChannel, resourceRoutingContainer);
+                    break;
+                case SMS:
+                    break;
+                case RESTHOOK:
+                    sendRestHookChannelMessage(destinationChannel, resourceRoutingContainer);
+                    break;
+                case WEBSOCKET:
+                    break;
+                case MESSAGE:
+                    break;
+                default:
+                    break;
             }
         }
     }
+
+    private void sendEmailChannelMessage(Subscription.SubscriptionChannelComponent destinationChannel, ResourceRoutingContainer resourceRoutingContainer) {
+        if (destinationChannel.getEndpoint() != null) {
+            // endpoint is in the form: "mailto:someone@example.com"
+            String[] endpointParts = destinationChannel.getEndpoint().split(":");
+
+            Message message = new Message(true);
+            message.setTemplateFormat(Message.TemplateFormat.HTML);
+            message.setAcceptHtmlMessage(true);
+            message.setTemplateName("email-subscriptionmessage");
+            message.addRecipient(endpointParts[1]);
+            message.setSenderEmail(defaultSenderAddress);
+            message.setSubject(destinationChannel.getHeader());
+            message.addResource("company-logo", PNG_MIME, getImageFile(HSPC_LOGO_IMAGE, "png"));
+            String resourceType = resourceRoutingContainer.getResource().getClass().getSimpleName();
+            message.addVariable("resourceType", resourceType);
+            message.addVariable("resourceTypeStatement", resourceType + " has been added or updated");
+            message.addVariable("sandboxLink", "https://sandbox.hspconsortium.org");
+
+            LOGGER.info("Sending email...");
+            Map auditInformation = gateway.sendEmail(message);
+            LOGGER.info("Done sending email");
+        }
+    }
+
+    private void sendRestHookChannelMessage(Subscription.SubscriptionChannelComponent destinationChannel, ResourceRoutingContainer resourceRoutingContainer) {
+        try {
+            HttpPost postRequest = new HttpPost(destinationChannel.getEndpoint());
+            StringEntity resourceIdEntity = new StringEntity(resourceRoutingContainer.getResource().getId().toString());
+            postRequest.setEntity(resourceIdEntity);
+
+            CloseableHttpClient httpClient = HttpClients.custom().build();
+            CloseableHttpResponse closeableHttpResponse = httpClient.execute(postRequest);
+            if (closeableHttpResponse.getStatusLine().getStatusCode() != 200) {
+                HttpEntity rEntity = closeableHttpResponse.getEntity();
+                String responseString = EntityUtils.toString(rEntity, "UTF-8");
+                throw new RuntimeException(
+                        "Error sending the subscription message to: " + resourceRoutingContainer.getDestinationChannels()
+                                + " Response Status : " + closeableHttpResponse.getStatusLine()
+                                + " Response Detail: " + responseString);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private byte[] getImageFile(String pathName, String imageType) {
+        BufferedImage img;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+        try {
+            ClassPathResource cpr = new ClassPathResource(pathName);
+            final File tempFile = File.createTempFile(UUID.randomUUID().toString(), ".tmp");
+            try (FileOutputStream out = new FileOutputStream(tempFile)) {
+                IOUtils.copy(cpr.getInputStream(), out);
+            }
+            img = ImageIO.read(tempFile);
+            ImageIO.write(img, imageType, baos);
+            baos.flush();
+            byte[] imageInByte = baos.toByteArray();
+            baos.close();
+            return imageInByte;
+        } catch (IOException e) {
+        }
+        return null;
+    }
+
 }

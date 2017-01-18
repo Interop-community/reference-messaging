@@ -51,7 +51,11 @@ public class RuleFromSubscriptionFactory {
         stringBuffer.append("    when\n");
         stringBuffer.append("        $c: PatientRoutingContainer()");
         stringBuffer.append("    then\n");
-        stringBuffer.append("        $c.addDestinationChannel(\"" + subscription.getChannel().getEndpoint() + "\");\n");
+        stringBuffer.append("        $c.addDestinationChannel(\n");
+        stringBuffer.append("            \"" + subscription.getChannel().getType().toString() + "\",\n");
+        stringBuffer.append("            \"" + subscription.getChannel().getEndpoint() + "\",\n");
+        stringBuffer.append("            \"" + subscription.getChannel().getPayload() + "\",\n");
+        stringBuffer.append("            \"" + subscription.getChannel().getHeader() + "\")\n");
         stringBuffer.append("end\n");
         return stringBuffer.toString();
     }
@@ -77,7 +81,11 @@ public class RuleFromSubscriptionFactory {
         }
         stringBuffer.append("            )\n");
         stringBuffer.append("    then\n");
-        stringBuffer.append("        $c.addDestinationChannel(\"" + subscription.getChannel().getEndpoint() + "\");\n");
+        stringBuffer.append("        $c.addDestinationChannel(\n");
+        stringBuffer.append("            \"" + subscription.getChannel().getType().toString() + "\",\n");
+        stringBuffer.append("            \"" + subscription.getChannel().getEndpoint() + "\",\n");
+        stringBuffer.append("            \"" + subscription.getChannel().getPayload() + "\",\n");
+        stringBuffer.append("            \"" + subscription.getChannel().getHeader() + "\")\n");
         stringBuffer.append("end\n");
         return stringBuffer.toString();
     }
@@ -97,7 +105,11 @@ public class RuleFromSubscriptionFactory {
         stringBuffer.append("        $c: CarePlanRoutingContainer(\n");
         stringBuffer.append("            )\n");
         stringBuffer.append("    then\n");
-        stringBuffer.append("        $c.addDestinationChannel(\"" + subscription.getChannel().getEndpoint() + "\");\n");
+        stringBuffer.append("        $c.addDestinationChannel(\n");
+        stringBuffer.append("            \"" + subscription.getChannel().getType().toString() + "\",\n");
+        stringBuffer.append("            \"" + subscription.getChannel().getEndpoint() + "\",\n");
+        stringBuffer.append("            \"" + subscription.getChannel().getPayload() + "\",\n");
+        stringBuffer.append("            \"" + subscription.getChannel().getHeader() + "\")\n");
         stringBuffer.append("end\n");
         return stringBuffer.toString();
     }
