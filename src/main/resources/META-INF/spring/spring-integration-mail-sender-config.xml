@@ -40,10 +40,12 @@
         <int:method name="sendEmail" request-channel="emailSenderGatewayRequestChannel">
             <int:header name="configuredHeader" value="some header value for send email"/>
         </int:method>
+<!--
 
         <int:method name="sendEmailTest" request-channel="emailSenderTestGatewayRequestChannel">
             <int:header name="configuredHeader" value="some header value for send email"/>
         </int:method>
+-->
     </int:gateway>
 
     <int:service-activator
@@ -58,11 +60,13 @@
             method="sendEmail"
             />
 
+<!--
     <int:service-activator
             input-channel="emailSenderTestGatewayRequestChannel"
             ref="mailerService"
             method="sendEmailTest"
             />
+-->
 
     <!-- Inbound HTTP Mail Service Health -->
     <int-http:inbound-gateway id="inboundHealthRequestGateway"
