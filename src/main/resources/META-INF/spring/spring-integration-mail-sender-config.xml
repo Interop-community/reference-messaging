@@ -87,10 +87,12 @@
     </int-http:inbound-gateway>
 
     <!-- Inbound HTTP Mail Sender Test -->
+<!--
     <int-http:inbound-gateway id="inboundSendMessageGateway"
                               supported-methods="POST"
                               request-channel="emailSenderTestGatewayRequestChannel"
                               path="/mailsendertest">
     </int-http:inbound-gateway>
+-->
 
 </beans>
