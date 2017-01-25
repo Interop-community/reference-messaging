@@ -44,6 +44,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.text.ParseException;
@@ -55,7 +56,7 @@ import java.util.UUID;
 @PropertySource("classpath:application.properties")
 @ImportResource("classpath*:/META-INF/spring/spring-integration-config.xml")
 public class AppConfig {
-    public static final String ENCODING = "UTF-8";
+    public static final String ENCODING = StandardCharsets.UTF_8.name();
 
     @Autowired
     Environment env;

@@ -16,12 +16,13 @@ import org.thymeleaf.context.Context;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import javax.servlet.http.HttpServletResponse;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 public interface EmailSenderService {
-    static final String ENCODING = "UTF-8";
+    String ENCODING = StandardCharsets.UTF_8.name();
 
     String health(String request);
 
@@ -57,7 +58,7 @@ public interface EmailSenderService {
         @Override
         public Map sendEmail(Message emailMessage)
                 throws MessagingException {
-            Map auditMap = new HashMap();
+            Map<String, String> auditMap = new HashMap<>();
 
             for (Message.Recipient recipient : emailMessage.getRecipients()) {
                 final Context ctx = new Context(recipient.getLocale());
@@ -131,13 +132,13 @@ public interface EmailSenderService {
         @Override
         public Map sendEmailTest(String body)
                 throws MessagingException {
-            Map auditMap = new HashMap();
+            Map<String, String> auditMap = new HashMap<>();
 
             Message.Recipient recipient = new Message.Recipient("Patricia Primary, MD", "travis@isalussolutions.com");
 
             // Prepare messageHelper using a Spring helper
             final MimeMessage mimeMessage = this.mailSender.createMimeMessage();
-            final MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+            final MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, true, ENCODING);
 
             messageHelper.setSubject("CarePlan Has Been Updated");
             messageHelper.setFrom("no-reply@hspconsortium.org");

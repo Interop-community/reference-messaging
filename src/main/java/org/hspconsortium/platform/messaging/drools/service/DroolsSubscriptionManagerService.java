@@ -42,6 +42,7 @@ import javax.imageio.ImageIO;
 import javax.inject.Inject;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.UUID;
 
@@ -55,18 +56,18 @@ public class DroolsSubscriptionManagerService implements SubscriptionManagerServ
     private static final String HSPC_LOGO_IMAGE = "templates\\images\\company-logo-main-web-top.png";
 
     @Inject
-    RuleFromSubscriptionFactory ruleFromSubscriptionFactory;
+    private RuleFromSubscriptionFactory ruleFromSubscriptionFactory;
 
     @Inject
-    EmailController gateway;
+    private EmailController gateway;
 
     @Inject
-    KnowledgeBase knowledgeBase;
+    private KnowledgeBase knowledgeBase;
 
     @Value("${mail.server.sender.address}")
     private String defaultSenderAddress;
 
-    ResourceStringConverter resourceStringConverter = new ResourceStringConverter();
+    private ResourceStringConverter resourceStringConverter = new ResourceStringConverter();
 
     @Override
     public String health() {
@@ -75,14 +76,18 @@ public class DroolsSubscriptionManagerService implements SubscriptionManagerServ
 
     @Override
     public String asString() {
-        StringBuffer packageBuffer = new StringBuffer("Packages: \n");
+        StringBuilder packageBuffer = new StringBuilder("Packages: \n");
         for (KnowledgePackage knowledgePackage : knowledgeBase.getKnowledgePackages()) {
-            packageBuffer.append(" - " + knowledgePackage.getName() + "\n");
+            packageBuffer.append(" - ");
+            packageBuffer.append(knowledgePackage.getName());
+            packageBuffer.append("\n");
 
             if (!knowledgePackage.getRules().isEmpty()) {
                 packageBuffer.append("    Rules: \n");
                 for (Rule rule : knowledgePackage.getRules()) {
-                    packageBuffer.append("      - " + rule.getName() + " \n");
+                    packageBuffer.append("      - ");
+                    packageBuffer.append(rule.getName());
+                    packageBuffer.append(" \n");
                 }
             }
         }
@@ -98,7 +103,7 @@ public class DroolsSubscriptionManagerService implements SubscriptionManagerServ
         kbuilder.add(
                 ResourceFactory.newInputStreamResource(
                         new ByteArrayInputStream(strDrl.getBytes()),
-                        "UTF-8"),
+                        StandardCharsets.UTF_8.name()),
                 ResourceType.DRL
         );
 
@@ -207,18 +212,22 @@ public class DroolsSubscriptionManagerService implements SubscriptionManagerServ
     private void sendRestHookChannelMessage(Subscription.SubscriptionChannelComponent destinationChannel, ResourceRoutingContainer resourceRoutingContainer) {
         try {
             HttpPost postRequest = new HttpPost(destinationChannel.getEndpoint());
-            StringEntity resourceIdEntity = new StringEntity(resourceRoutingContainer.getResource().getId().toString());
-            postRequest.setEntity(resourceIdEntity);
+            if (resourceRoutingContainer != null
+                    && resourceRoutingContainer.getResource() != null
+                    && resourceRoutingContainer.getResource().getId() != null) {
+                StringEntity resourceIdEntity = new StringEntity(resourceRoutingContainer.getResource().getId());
+                postRequest.setEntity(resourceIdEntity);
 
-            CloseableHttpClient httpClient = HttpClients.custom().build();
-            CloseableHttpResponse closeableHttpResponse = httpClient.execute(postRequest);
-            if (closeableHttpResponse.getStatusLine().getStatusCode() != 200) {
-                HttpEntity rEntity = closeableHttpResponse.getEntity();
-                String responseString = EntityUtils.toString(rEntity, "UTF-8");
-                throw new RuntimeException(
-                        "Error sending the subscription message to: " + resourceRoutingContainer.getDestinationChannels()
-                                + " Response Status : " + closeableHttpResponse.getStatusLine()
-                                + " Response Detail: " + responseString);
+                CloseableHttpClient httpClient = HttpClients.custom().build();
+                CloseableHttpResponse closeableHttpResponse = httpClient.execute(postRequest);
+                if (closeableHttpResponse.getStatusLine().getStatusCode() != 200) {
+                    HttpEntity rEntity = closeableHttpResponse.getEntity();
+                    String responseString = EntityUtils.toString(rEntity, StandardCharsets.UTF_8);
+                    throw new RuntimeException(
+                            "Error sending the subscription message to: " + resourceRoutingContainer.getDestinationChannels()
+                                    + " Response Status : " + closeableHttpResponse.getStatusLine()
+                                    + " Response Detail: " + responseString);
+                }
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
