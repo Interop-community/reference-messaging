@@ -1,6 +1,5 @@
 package org.hspconsortium.platform.messaging.model;
 
-import org.apache.commons.lang3.Validate;
 import org.hl7.fhir.dstu3.model.Patient;
 import org.hl7.fhir.instance.model.api.IDomainResource;
 
@@ -11,14 +10,15 @@ public class PatientRoutingContainer extends ResourceRoutingContainer implements
 
     private Patient patient;
 
-    private long ageInMillis;
+    private long ageInMillis = Long.MAX_VALUE;
 
     public PatientRoutingContainer(Patient patient) {
         super();
         this.patient = patient;
 
-        Validate.notNull(patient.getBirthDate());
-        ageInMillis =  new Date().getTime() - patient.getBirthDate().getTime();
+        if (patient.getBirthDate() != null) {
+            ageInMillis = new Date().getTime() - patient.getBirthDate().getTime();
+        }
 
     }
 
