@@ -208,7 +208,7 @@ public class DroolsSubscriptionManagerService implements SubscriptionManagerServ
                 Map auditInformation = gateway.sendEmail(message);
                 LOGGER.info("Done sending email");
             } catch (RuntimeException e) {
-                LOGGER.warn("Error sending email on error channel", e);
+                LOGGER.warn("Error sending email on error channel: " + e.getMessage());
             }
         }
     }
@@ -234,7 +234,7 @@ public class DroolsSubscriptionManagerService implements SubscriptionManagerServ
                 }
             }
         } catch (IOException e) {
-            LOGGER.warn("Error sending hooks channel", e);
+            LOGGER.warn("Error sending hooks channel: " + e.getMessage());
         }
     }
 
