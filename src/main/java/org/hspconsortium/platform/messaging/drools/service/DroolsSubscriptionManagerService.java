@@ -187,25 +187,29 @@ public class DroolsSubscriptionManagerService implements SubscriptionManagerServ
 
     private void sendEmailChannelMessage(Subscription.SubscriptionChannelComponent destinationChannel, ResourceRoutingContainer resourceRoutingContainer) {
         if (destinationChannel.getEndpoint() != null) {
-            // endpoint is in the form: "mailto:someone@example.com"
-            String[] endpointParts = destinationChannel.getEndpoint().split(":");
+            try {
+                // endpoint is in the form: "mailto:someone@example.com"
+                String[] endpointParts = destinationChannel.getEndpoint().split(":");
 
-            Message message = new Message(true);
-            message.setTemplateFormat(Message.TemplateFormat.HTML);
-            message.setAcceptHtmlMessage(true);
-            message.setTemplateName("email-subscriptionmessage");
-            message.addRecipient(endpointParts[1]);
-            message.setSenderEmail(defaultSenderAddress);
-            message.setSubject(destinationChannel.getHeader());
-            message.addResource("company-logo", PNG_MIME, getImageFile(HSPC_LOGO_IMAGE, "png"));
-            String resourceType = resourceRoutingContainer.getResource().getClass().getSimpleName();
-            message.addVariable("resourceType", resourceType);
-            message.addVariable("resourceTypeStatement", resourceType + " has been added or updated");
-            message.addVariable("sandboxLink", "https://sandbox.hspconsortium.org");
+                Message message = new Message(true);
+                message.setTemplateFormat(Message.TemplateFormat.HTML);
+                message.setAcceptHtmlMessage(true);
+                message.setTemplateName("email-subscriptionmessage");
+                message.addRecipient(endpointParts[1]);
+                message.setSenderEmail(defaultSenderAddress);
+                message.setSubject(destinationChannel.getHeader());
+                message.addResource("company-logo", PNG_MIME, getImageFile(HSPC_LOGO_IMAGE, "png"));
+                String resourceType = resourceRoutingContainer.getResource().getClass().getSimpleName();
+                message.addVariable("resourceType", resourceType);
+                message.addVariable("resourceTypeStatement", resourceType + " has been added or updated");
+                message.addVariable("sandboxLink", "https://sandbox.hspconsortium.org");
 
-            LOGGER.info("Sending email...");
-            Map auditInformation = gateway.sendEmail(message);
-            LOGGER.info("Done sending email");
+                LOGGER.info("Sending email...");
+                Map auditInformation = gateway.sendEmail(message);
+                LOGGER.info("Done sending email");
+            } catch (RuntimeException e) {
+                LOGGER.warn("Error sending email on error channel", e);
+            }
         }
     }
 
@@ -230,7 +234,7 @@ public class DroolsSubscriptionManagerService implements SubscriptionManagerServ
                 }
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            LOGGER.warn("Error sending hooks channel", e);
         }
     }
 
