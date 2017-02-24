@@ -7,7 +7,7 @@ import org.springframework.boot.context.web.SpringBootServletInitializer;
 import org.springframework.context.ApplicationContext;
 import org.springframework.integration.config.EnableIntegration;
 
-@SpringBootApplication
+@SpringBootApplication(exclude={org.springframework.boot.autoconfigure.thymeleaf.ThymeleafAutoConfiguration.class})
 @EnableIntegration
 public class Application extends SpringBootServletInitializer {
 

@@ -1,6 +1,6 @@
 package org.hspconsortium.platform.messaging.drools.factory;
 
-import ca.uhn.fhir.model.dstu2.resource.Subscription;
+import org.hl7.fhir.dstu3.model.Subscription;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -15,6 +15,8 @@ public class RuleFromSubscriptionFactory {
                 return createPatientDroolsRule(subscription);
             case "Observation":
                 return createObservationDroolsRule(subscription);
+            case "CarePlan":
+                return createCarePlanDroolsRule(subscription);
             default:
                 throw new RuntimeException("Unsupported resource for criteria: " + subscription.getCriteria());
         }
@@ -45,11 +47,15 @@ public class RuleFromSubscriptionFactory {
         stringBuffer.append("dialect \"mvel\"\n");
         stringBuffer.append("import org.hspconsortium.platform.messaging.model.ResourceRoutingContainer\n");
         stringBuffer.append("import org.hspconsortium.platform.messaging.model.PatientRoutingContainer\n");
-        stringBuffer.append("rule \"Subscription rule: " + subscription.getId().getIdPart() + "\"\n");
+        stringBuffer.append("rule \"Subscription rule: " + subscription.getId() + "\"\n");
         stringBuffer.append("    when\n");
         stringBuffer.append("        $c: PatientRoutingContainer()");
         stringBuffer.append("    then\n");
-        stringBuffer.append("        $c.addDestinationChannel(\"" + subscription.getChannel().getEndpoint() + "\");\n");
+        stringBuffer.append("        $c.addDestinationChannel(\n");
+        stringBuffer.append("            \"" + subscription.getChannel().getType().toString() + "\",\n");
+        stringBuffer.append("            \"" + subscription.getChannel().getEndpoint() + "\",\n");
+        stringBuffer.append("            \"" + subscription.getChannel().getPayload() + "\",\n");
+        stringBuffer.append("            \"" + subscription.getChannel().getHeader() + "\")\n");
         stringBuffer.append("end\n");
         return stringBuffer.toString();
     }
@@ -64,7 +70,7 @@ public class RuleFromSubscriptionFactory {
         stringBuffer.append("dialect \"mvel\"\n");
         stringBuffer.append("import org.hspconsortium.platform.messaging.model.ResourceRoutingContainer\n");
         stringBuffer.append("import org.hspconsortium.platform.messaging.model.ObservationRoutingContainer\n");
-        stringBuffer.append("rule \"Subscription rule: " + subscription.getId().getIdPart() + "\"\n");
+        stringBuffer.append("rule \"Subscription rule: " + subscription.getId() + "\"\n");
         stringBuffer.append("    when\n");
         stringBuffer.append("        $c: ObservationRoutingContainer(\n");
         // todo this hard-coding is just for the demo
@@ -75,7 +81,35 @@ public class RuleFromSubscriptionFactory {
         }
         stringBuffer.append("            )\n");
         stringBuffer.append("    then\n");
-        stringBuffer.append("        $c.addDestinationChannel(\"" + subscription.getChannel().getEndpoint() + "\");\n");
+        stringBuffer.append("        $c.addDestinationChannel(\n");
+        stringBuffer.append("            \"" + subscription.getChannel().getType().toString() + "\",\n");
+        stringBuffer.append("            \"" + subscription.getChannel().getEndpoint() + "\",\n");
+        stringBuffer.append("            \"" + subscription.getChannel().getPayload() + "\",\n");
+        stringBuffer.append("            \"" + subscription.getChannel().getHeader() + "\")\n");
+        stringBuffer.append("end\n");
+        return stringBuffer.toString();
+    }
+
+    private String createCarePlanDroolsRule(Subscription subscription) {
+        // create a drl based on the subscription
+        String codeOption = getCriteria("code", getCriteriaOptions(subscription.getCriteria()));
+
+        // todo add support for actual criteria
+        StringBuffer stringBuffer = new StringBuffer();
+        stringBuffer.append("package org.hspconsortium.platform.messaging\n");
+        stringBuffer.append("dialect \"mvel\"\n");
+        stringBuffer.append("import org.hspconsortium.platform.messaging.model.ResourceRoutingContainer\n");
+        stringBuffer.append("import org.hspconsortium.platform.messaging.model.CarePlanRoutingContainer\n");
+        stringBuffer.append("rule \"Subscription rule: " + subscription.getId() + "\"\n");
+        stringBuffer.append("    when\n");
+        stringBuffer.append("        $c: CarePlanRoutingContainer(\n");
+        stringBuffer.append("            )\n");
+        stringBuffer.append("    then\n");
+        stringBuffer.append("        $c.addDestinationChannel(\n");
+        stringBuffer.append("            \"" + subscription.getChannel().getType().toString() + "\",\n");
+        stringBuffer.append("            \"" + subscription.getChannel().getEndpoint() + "\",\n");
+        stringBuffer.append("            \"" + subscription.getChannel().getPayload() + "\",\n");
+        stringBuffer.append("            \"" + subscription.getChannel().getHeader() + "\")\n");
         stringBuffer.append("end\n");
         return stringBuffer.toString();
     }

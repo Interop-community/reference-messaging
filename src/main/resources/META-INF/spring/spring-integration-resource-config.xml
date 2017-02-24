@@ -13,6 +13,7 @@
             request-channel="inboundResourceHealthChannel"
             path="/resource/health"
             supported-methods="GET"
+            error-channel="errorChannel"
             />
 
     <int:service-activator
@@ -20,32 +21,31 @@
             input-channel="inboundResourceHealthChannel"
             ref="subscriptionManagerService"
             method="health"
-            />
+    />
 
+    <!-- Submit Resource -->
     <int-http:inbound-gateway
             request-channel="httpResourceChannel"
-            reply-channel=""
             path="/resource"
             supported-methods="POST"
-            request-payload-type="byte[]"
-            message-converters="converters"
-            merge-with-default-converters="false"
+            request-payload-type="java.lang.String"
+            error-channel="errorChannel"
             />
 
+<!--
     <int:service-activator
             id="resourceManagerServiceProcessResourceActivator"
             input-channel="httpResourceChannel"
             ref="subscriptionManagerService"
             method="submitResource"
             />
+-->
 
-<!--
     <int:service-activator
             id="submitResourceViaHTTPServiceActivator"
             input-channel="httpResourceChannel"
             ref="droolsSubscriptionAdapter"
             method="submitResource"
             />
--->
 
 </beans>

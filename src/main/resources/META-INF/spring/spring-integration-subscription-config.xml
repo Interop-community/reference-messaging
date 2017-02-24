@@ -12,7 +12,8 @@
             request-channel="inboundSubscriptionHealthChannel"
             path="/subscription/health"
             supported-methods="GET"
-            />
+            error-channel="errorChannel"
+    />
 
     <int:service-activator
             id="subscriptionManagerServiceHealthActivator"
@@ -24,10 +25,10 @@
     <!-- Inbound HTTP Subscription Management -->
     <int-http:inbound-gateway
             request-channel="inboundSubscriptionRouterChannel"
-            reply-channel=""
             path="/subscription"
             supported-methods="GET,DELETE"
-            />
+            error-channel="errorChannel"
+    />
 
     <int:router
             input-channel="inboundSubscriptionRouterChannel"
@@ -65,13 +66,11 @@
 
     <int-http:inbound-gateway
             request-channel="inboundSubscriptionRegistrationChannel"
-            reply-channel=""
             path="/subscription"
             supported-methods="POST"
-            request-payload-type="byte[]"
-            message-converters="converters"
-            merge-with-default-converters="false"
-            />
+            request-payload-type="java.lang.String"
+            error-channel="errorChannel"
+    />
 
     <int:service-activator
             id="subscriptionManagerServiceRegisterSubscriptionActivator"

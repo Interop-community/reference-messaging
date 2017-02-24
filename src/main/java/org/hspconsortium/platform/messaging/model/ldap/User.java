@@ -9,8 +9,14 @@ public final class User {
     @Attribute(name = "uid")
     private String userName;
 
+    @Attribute(name = "userPassword")
+    private String userPassword;
+
     @Attribute(name = "employeeNumber")
     private String employeeNumber;
+
+    @Attribute(name = "ou")
+    private String organization;
 
     @Attribute(name = "organizationName")
     private String organizationName;
@@ -35,14 +41,19 @@ public final class User {
 
     @Attribute(name = "labeledURI")
     private String profileUri;
+
     @Attribute(name = "givenName")
     private String givenName;
+
     @Attribute(name = "familyName")
     private String familyName;
+
     @Attribute(name = "middleName")
     private String middleName;
+
     @Attribute(name = "profile")
     private String profile;
+
     @Attribute(name = "website")
     private String website;
 
@@ -185,6 +196,14 @@ public final class User {
         return ldapEntityName;
     }
 
+    public void setUserPassword(String userPassword) {
+        this.userPassword = userPassword;
+    }
+
+    public String getUserPassword() {
+        return userPassword;
+    }
+
 
     @Override
     public boolean equals(Object o) {
@@ -202,5 +221,13 @@ public final class User {
     @Override
     public int hashCode() {
         return ldapEntityName != null ? ldapEntityName.hashCode() : 0;
+    }
+
+    public void setOrganization(String organization) {
+        this.organization = organization;
+    }
+
+    public String getOrganization() {
+        return organization;
     }
 }

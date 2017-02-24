@@ -11,7 +11,7 @@
     <name>Reference Messaging</name>
     <groupId>org.hspconsortium.reference</groupId>
     <artifactId>hspc-reference-messaging</artifactId>
-    <version>0.6-SNAPSHOT</version>
+    <version>1.1-SNAPSHOT</version>
     <packaging>war</packaging>
 
     <scm>
@@ -22,16 +22,27 @@
     </scm>
 
     <properties>
-        <java.version>1.7</java.version>
-        <hapi.version>1.4</hapi.version>
+        <java.version>1.8</java.version>
+        <reference-messaging.version>1.1-SNAPSHOT</reference-messaging.version>
+        <hapi.version>2.2</hapi.version>
         <drools.version>6.2.0.Final</drools.version>
         <javax.inject.version>1</javax.inject.version>
-        <hspc-java-client.version>1.2</hspc-java-client.version>
+        <hspc-java-client.version>1.6-SNAPSHOT</hspc-java-client.version>
         <commons-validator.version>1.4.1</commons-validator.version>
+        <thymeleaf.version>3.0.0.RELEASE</thymeleaf.version>
         <oro.version>2.0.8</oro.version>
+        <!-- The main class to start by executing java -jar -->
+        <start-class>org.hspconsortium.platform.messaging.Application</start-class>
     </properties>
 
     <dependencies>
+
+        <!-- mail-->
+        <dependency>
+            <groupId>org.hspconsortium.reference</groupId>
+            <artifactId>hspc-reference-messaging-common</artifactId>
+            <version>${reference-messaging.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -61,16 +72,16 @@
             <groupId>org.hspconsortium.client</groupId>
             <artifactId>hspc-java-client</artifactId>
             <version>${hspc-java-client.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-simple</artifactId>
-                </exclusion>
-            </exclusions>
+            <!--<exclusions>-->
+                <!--<exclusion>-->
+                    <!--<groupId>org.slf4j</groupId>-->
+                    <!--<artifactId>slf4j-api</artifactId>-->
+                <!--</exclusion>-->
+                <!--<exclusion>-->
+                    <!--<groupId>org.slf4j</groupId>-->
+                    <!--<artifactId>slf4j-simple</artifactId>-->
+                <!--</exclusion>-->
+            <!--</exclusions>-->
         </dependency>
 
         <dependency>
@@ -88,7 +99,7 @@
         <!-- FHIR DSTU2 Structures Jar -->
         <dependency>
             <groupId>ca.uhn.hapi.fhir</groupId>
-            <artifactId>hapi-fhir-structures-dstu2</artifactId>
+            <artifactId>hapi-fhir-structures-dstu3</artifactId>
             <version>${hapi.version}</version>
         </dependency>
 
@@ -145,6 +156,36 @@
             <groupId>org.jbpm</groupId>
             <artifactId>jbpm-flow-builder</artifactId>
             <version>${drools.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context-support</artifactId>
+            <version>4.3.0.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>org.thymeleaf</groupId>
+            <artifactId>thymeleaf</artifactId>
+            <version>${thymeleaf.version}</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.thymeleaf</groupId>
+            <artifactId>thymeleaf-spring4</artifactId>
+            <version>${thymeleaf.version}</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.mail</groupId>
+            <artifactId>mail</artifactId>
+            <version>1.4.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.integration</groupId>
+            <artifactId>spring-integration-test</artifactId>
+            <version>4.3.0.RELEASE</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
