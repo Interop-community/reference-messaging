@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.hspconsortium.release</groupId>
+        <groupId>org.hspconsortium</groupId>
         <artifactId>hspc-reference-messaging-parent</artifactId>
         <version>1.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
