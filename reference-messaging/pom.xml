@@ -24,6 +24,7 @@
     <properties>
         <!-- The main class to start by executing java -jar -->
         <start-class>org.hspconsortium.platform.messaging.Application</start-class>
+        <springboot_jar.skip>false</springboot_jar.skip>
     </properties>
 
     <dependencies>

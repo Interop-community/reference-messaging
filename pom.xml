@@ -29,6 +29,21 @@
         <commons-validator.version>1.4.1</commons-validator.version>
         <thymeleaf.version>3.0.0.RELEASE</thymeleaf.version>
         <oro.version>2.0.8</oro.version>
+        <!-- Most artifacts don't need to be executable an executable jar, so skip by default -->
+        <springboot_jar.skip>true</springboot_jar.skip>
     </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <!-- Make the executable jar optional -->
+                    <skip>${springboot_jar.skip}</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
