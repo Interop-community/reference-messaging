@@ -1,0 +1,27 @@
+{
+  "multipart":false,
+  "encoding":"UTF-8",
+  "senderEmail":"sandbox@hspconsortium.org",
+  "senderName":"HSPC Email Sender Name",
+  "recipients":[
+    {
+      "email":"sandbox@hspconsortium.org",
+      "name":"Email Recipient Name",
+      "locale":"en_US"
+    }
+  ],
+  "variable":{
+    "subscriptionDate":"Jul 22, 2016 5:21:07 PM",
+    "hobbies":[
+      "Cinema",
+      "Sports",
+      "Music"
+    ],
+    "name":"HSPC Email Sender Name"
+  },
+  "subject":"This is a test Email Subject",
+  "templateName":"email-text",
+  "acceptHtmlMessage":false,
+  "templateFormat":"TEXT",
+  "auditEnabled":false
+}
