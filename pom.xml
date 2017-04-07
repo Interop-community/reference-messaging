@@ -10,7 +10,7 @@
         <version>0.3</version>
     </parent>
 
-    <groupId>org.hspconsortium</groupId>
+    <groupId>org.hspconsortium.reference</groupId>
     <artifactId>hspc-reference-messaging-parent</artifactId>
     <version>1.2-SNAPSHOT</version>
     <packaging>pom</packaging>
