@@ -45,7 +45,7 @@ public class EmailRestDemoClient {
 
     private static void sendMessage(Message message) throws IOException, AuthenticationException {
         String url = "http://lpv-hdsvnev02.co.ihc.com:8080/mailsender";
-//        String url = "http://localhost:8080/hspc-reference-messaging/mailsender";
+//        String url = "http://localhost:8091/mailsender";
 
 
 

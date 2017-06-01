@@ -137,7 +137,7 @@ public interface SandboxUserRegistrationService {
          *               "distinctName":"cn\u003dbbc72236-25e6-4d8f-bdf9-4790c1e6f44e",
          *               "displayName":"Tintin",
          *               "ldapHost":"ldap://lpv-hdsvnev02.co.ihc.com:10389",
-         *               "profileUrl":"https://sandbox.hspconsortium.org/dstu2/hspc-reference-api/data/Practitioner/16824",
+         *               "profileUrl":"https://api.hspconsortium.org/hspc/data/Practitioner/16824",
          *               "cn":"bbc72236-25e6-4d8f-bdf9-4790c1e6f44e",
          *               "sn":"e5f77cf5-fc56-4fae-9e9a-d9eaaffa86d3",
          *               "employeeNumber":"896512",

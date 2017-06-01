@@ -27,7 +27,7 @@ public class UserRestDemoClient {
 
     private static void createOrUpdateUser(SandboxUserInfo userInfo) throws IOException, AuthenticationException {
         String url = "http://lpv-hdsvnev02.co.ihc.com:8080/sandboxuser";
-//        String url = "http://localhost:8080/hspc-reference-messaging/sandboxuser";
+//        String url = "http://localhost:8091/sandboxuser";
 
         CloseableHttpClient client = HttpClients.createDefault();
         HttpPut http = new HttpPut(url);
@@ -52,7 +52,7 @@ public class UserRestDemoClient {
         userInfo.setEmployeeNumber("896512");
         userInfo.setEmail(UUID.randomUUID().toString() + "@imail.org");
         userInfo.setLdapHost("ldap://lpv-hdsvnev02.co.ihc.com:10389");
-        userInfo.setProfileUrl("https://sandbox.hspconsortium.org/dstu2/hspc-reference-api/data/Practitioner/16824");
+        userInfo.setProfileUrl("https://api.hspconsortium.org/hspc/data/Practitioner/16824");
         userInfo.setUserId(userInfo.getEmail());
         userInfo.setUserPassword("modification");
         userInfo.setDistinctName("cn=" + userInfo.getCn());

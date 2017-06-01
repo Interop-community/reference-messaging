@@ -28,7 +28,7 @@ public class UserClient {
         userInfo.setDisplayName("Tintin");
         userInfo.setEmployeeNumber("896512");
         userInfo.setEmail("noman.rahman@imail.org");
-        userInfo.setProfileUrl("http://localhost:8080/hspc-reference-api/data/Practitioner/332/_history/1");
+        userInfo.setProfileUrl("http://localhost:8071/data/Practitioner/332/_history/1");
         userInfo.setUserId("noman.rahman@imail.org");
         userInfo.setUserPassword("password");
         userInfo.setDistinctName("cn=" + userInfo.getCn());
