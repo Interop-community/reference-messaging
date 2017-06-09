@@ -1,5 +1,6 @@
 package org.hspconsortium.platform.messaging.model;
 
+import org.hl7.fhir.dstu3.model.StringType;
 import org.hl7.fhir.dstu3.model.Subscription;
 import org.hl7.fhir.instance.model.api.IDomainResource;
 
@@ -30,7 +31,7 @@ public abstract class ResourceRoutingContainer {
         subscriptionChannelComponent.setType(Subscription.SubscriptionChannelType.valueOf(type));
         subscriptionChannelComponent.setEndpoint(endpoint);
         subscriptionChannelComponent.setPayload(payload);
-        subscriptionChannelComponent.setHeader(header);
+        subscriptionChannelComponent.getHeader().add(new StringType(header));
         destinationChannels.add(subscriptionChannelComponent);
     }
 

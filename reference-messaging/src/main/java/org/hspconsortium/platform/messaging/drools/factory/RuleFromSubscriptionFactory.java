@@ -41,6 +41,10 @@ public class RuleFromSubscriptionFactory {
 
     private String createPatientDroolsRule(Subscription subscription) {
         // create a drl based on the subscription
+        String firstHeader = null;
+        if (subscription.getChannel() != null && subscription.getChannel().getHeader().size() > 0) {
+            firstHeader = subscription.getChannel().getHeader().get(0).getValue();
+        }
         // todo add support for actual criteria
         StringBuffer stringBuffer = new StringBuffer();
         stringBuffer.append("package org.hspconsortium.platform.messaging\n");
@@ -55,7 +59,7 @@ public class RuleFromSubscriptionFactory {
         stringBuffer.append("            \"" + subscription.getChannel().getType().toString() + "\",\n");
         stringBuffer.append("            \"" + subscription.getChannel().getEndpoint() + "\",\n");
         stringBuffer.append("            \"" + subscription.getChannel().getPayload() + "\",\n");
-        stringBuffer.append("            \"" + subscription.getChannel().getHeader() + "\")\n");
+        stringBuffer.append("            " + (firstHeader != null ? "\"" + firstHeader  + "\"" : "null") + ")\n");
         stringBuffer.append("end\n");
         return stringBuffer.toString();
     }

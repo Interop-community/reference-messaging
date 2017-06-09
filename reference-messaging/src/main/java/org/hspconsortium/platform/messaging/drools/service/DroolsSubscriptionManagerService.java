@@ -197,7 +197,7 @@ public class DroolsSubscriptionManagerService implements SubscriptionManagerServ
                 message.setTemplateName("email-subscriptionmessage");
                 message.addRecipient(endpointParts[1]);
                 message.setSenderEmail(defaultSenderAddress);
-                message.setSubject(destinationChannel.getHeader());
+                message.setSubject("Resource Matching Subscription");
                 message.addResource("company-logo", PNG_MIME, getImageFile(HSPC_LOGO_IMAGE, "png"));
                 String resourceType = resourceRoutingContainer.getResource().getClass().getSimpleName();
                 message.addVariable("resourceType", resourceType);
