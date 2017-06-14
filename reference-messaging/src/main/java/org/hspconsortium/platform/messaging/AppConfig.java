@@ -12,7 +12,9 @@ import org.hspconsortium.client.auth.access.JsonAccessTokenProvider;
 import org.hspconsortium.client.auth.credentials.ClientSecretCredentials;
 import org.hspconsortium.client.auth.credentials.Credentials;
 import org.hspconsortium.client.auth.credentials.JWTCredentials;
-import org.hspconsortium.client.controller.FhirEndpointsProvider;
+import org.hspconsortium.client.controller.FhirEndpointsProviderDSTU2;
+import org.hspconsortium.client.controller.FhirEndpointsProviderSTU3;
+import org.hspconsortium.client.session.ApacheHttpClientFactory;
 import org.hspconsortium.client.session.clientcredentials.ClientCredentialsSessionFactory;
 import org.hspconsortium.platform.messaging.drools.service.DroolsSubscriptionManagerService;
 import org.hspconsortium.platform.messaging.service.EmailSenderService;
@@ -214,14 +216,27 @@ public class AppConfig {
         return new ClientSecretCredentials(clientSecret);
     }
 
+    @Inject
     @Bean
-    public AccessTokenProvider tokenProvider() {
-        return new JsonAccessTokenProvider();
+    public ApacheHttpClientFactory apacheHttpClientFactory(String proxyHost, Integer proxyPort, String proxyUser,
+                                                           String proxyPassword, Integer httpConnectionTimeOut, Integer httpReadTimeOut) {
+        return new ApacheHttpClientFactory(proxyHost, proxyPort, proxyUser, proxyPassword, httpConnectionTimeOut, httpReadTimeOut);
+    }
+
+    @Inject
+    @Bean
+    public AccessTokenProvider tokenProvider(ApacheHttpClientFactory apacheHttpClientFactory) {
+        return new JsonAccessTokenProvider(apacheHttpClientFactory);
     }
 
     @Bean
-    public FhirEndpointsProvider fhirEndpointsProvider(FhirContext fhirContext) {
-        return new FhirEndpointsProvider.Impl(fhirContext);
+    public FhirEndpointsProviderDSTU2 fhirEndpointsProviderDSTU2(FhirContext fhirContext) {
+        return new FhirEndpointsProviderDSTU2(fhirContext);
+    }
+
+    @Bean
+    public FhirEndpointsProviderSTU3 fhirEndpointsProviderSTU3(FhirContext fhirContext) {
+        return new FhirEndpointsProviderSTU3(fhirContext);
     }
 
     @Bean
@@ -263,8 +278,20 @@ public class AppConfig {
     @Bean
     @Inject
     // simulate two EHR by having two instances of session factory
-    public ClientCredentialsSessionFactory<? extends Credentials> ehrSessionFactory(
-            FhirContext fhirContext, AccessTokenProvider tokenProvider, FhirEndpointsProvider fhirEndpointsProvider, String fhirServicesUrl,
+    public ClientCredentialsSessionFactory<? extends Credentials> ehrSessionFactoryDSTU2(
+            FhirContext fhirContext, AccessTokenProvider tokenProvider, FhirEndpointsProviderDSTU2 fhirEndpointsProvider, String fhirServicesUrl,
+            String clientId, Credentials credentials, String scope) {
+        Scopes scopes = new Scopes();
+        scopes.add(new SimpleScope(scope));
+        return new ClientCredentialsSessionFactory<>(fhirContext, tokenProvider, fhirEndpointsProvider, fhirServicesUrl, clientId,
+                credentials, scopes);
+    }
+
+    @Bean
+    @Inject
+    // simulate two EHR by having two instances of session factory
+    public ClientCredentialsSessionFactory<? extends Credentials> ehrSessionFactorySTU3(
+            FhirContext fhirContext, AccessTokenProvider tokenProvider, FhirEndpointsProviderSTU3 fhirEndpointsProvider, String fhirServicesUrl,
             String clientId, Credentials credentials, String scope) {
         Scopes scopes = new Scopes();
         scopes.add(new SimpleScope(scope));
