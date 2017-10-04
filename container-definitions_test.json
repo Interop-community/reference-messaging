@@ -1,0 +1,22 @@
+[
+  {
+    "name": "reference-messaging",
+    "image": "nexus.hspconsortium.org:18083/hspc/reference-messaging:latest",
+    "cpu": 0,
+    "portMappings": [
+      {
+        "containerPort": 8091,
+        "hostPort": 8081,
+        "protocol": "tcp"
+      }
+    ],
+    "memory": 128,
+    "essential": true,
+    "environment": [
+      {
+        "name": "EXAMPLE_NAME",
+        "value": "EXAMPLE_VALUE"
+      }
+    ]
+  }
+]
