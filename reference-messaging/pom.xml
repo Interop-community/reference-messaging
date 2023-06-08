@@ -26,13 +26,25 @@
         <springboot_jar.skip>false</springboot_jar.skip>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>bom</artifactId>
+                <version>2.20.45</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
 
         <!-- mail-->
         <dependency>
             <groupId>org.hspconsortium.reference</groupId>
             <artifactId>hspc-reference-messaging-common</artifactId>
-            <version>${project.version}</version>
+             <version>1.4.0</version>
         </dependency>
 
         <dependency>
@@ -150,6 +162,19 @@
             <version>4.3.0.RELEASE</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>sns</artifactId>
+            <version>2.20.45</version>
+
+        <!-- necessary to be on the class path for ProfileCredentialsProvider -->
+        </dependency>
+            <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>sts</artifactId>
+            <version>2.20.45</version>
+        </dependency>
+        
     </dependencies>
 
     <build>

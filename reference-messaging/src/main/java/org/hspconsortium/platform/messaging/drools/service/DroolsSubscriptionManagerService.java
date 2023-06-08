@@ -11,6 +11,7 @@ import org.apache.http.util.EntityUtils;
 import org.hl7.fhir.dstu3.model.CarePlan;
 import org.hl7.fhir.dstu3.model.Observation;
 import org.hl7.fhir.dstu3.model.Patient;
+import org.hl7.fhir.dstu3.model.StringType;
 import org.hl7.fhir.dstu3.model.Subscription;
 import org.hl7.fhir.instance.model.api.IDomainResource;
 import org.hspconsortium.platform.messaging.controller.mail.EmailController;
@@ -38,6 +39,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
+import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.sns.SnsClient;
+import software.amazon.awssdk.services.sns.model.PublishRequest;
+import software.amazon.awssdk.services.sns.model.PublishResponse;
+import software.amazon.awssdk.services.sns.model.SnsException;
+
 import javax.imageio.ImageIO;
 import javax.inject.Inject;
 import java.awt.image.BufferedImage;
@@ -53,7 +61,7 @@ public class DroolsSubscriptionManagerService implements SubscriptionManagerServ
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DroolsSubscriptionManagerService.class);
 
-    private static final String HSPC_LOGO_IMAGE = "templates\\images\\company-logo-main-web-top.png";
+    private static final String HSPC_LOGO_IMAGE = "templates\\images\\Meld-favicon-16.png";
 
     @Inject
     private RuleFromSubscriptionFactory ruleFromSubscriptionFactory;
@@ -171,6 +179,7 @@ public class DroolsSubscriptionManagerService implements SubscriptionManagerServ
                     sendEmailChannelMessage(destinationChannel, resourceRoutingContainer);
                     break;
                 case SMS:
+                    sendSmsChannelMessage(destinationChannel, resourceRoutingContainer);
                     break;
                 case RESTHOOK:
                     sendRestHookChannelMessage(destinationChannel, resourceRoutingContainer);
@@ -197,7 +206,12 @@ public class DroolsSubscriptionManagerService implements SubscriptionManagerServ
                 message.setTemplateName("email-subscriptionmessage");
                 message.addRecipient(endpointParts[1]);
                 message.setSenderEmail(defaultSenderAddress);
-                message.setSubject("Resource Matching Subscription");
+                String subject="";
+                for(StringType s : destinationChannel.getHeader())
+                {
+                    subject=subject + s.getValueNotNull() + ",";
+                }
+                message.setSubject(destinationChannel.hasHeader() ? subject  : "Resource Matching Subscription" );
                 message.addResource("company-logo", PNG_MIME, getImageFile(HSPC_LOGO_IMAGE, "png"));
                 String resourceType = resourceRoutingContainer.getResource().getClass().getSimpleName();
                 message.addVariable("resourceType", resourceType);
@@ -209,6 +223,43 @@ public class DroolsSubscriptionManagerService implements SubscriptionManagerServ
                 LOGGER.info("Done sending email");
             } catch (RuntimeException e) {
                 LOGGER.warn("Error sending email on error channel: " + e.getMessage());
+            }
+        }
+    }
+
+    
+    private void sendSmsChannelMessage(Subscription.SubscriptionChannelComponent destinationChannel, ResourceRoutingContainer resourceRoutingContainer) {
+        if (destinationChannel.getEndpoint() != null) {
+            try {
+
+                SnsClient snsClient = SnsClient.builder()
+                .region(Region.US_EAST_1)
+                .build();
+                IDomainResource resourceType = resourceRoutingContainer.getResource(); //.getClass().getSimpleName();
+
+                String message = "Broward Notification: " +
+                                 resourceType.getClass().getSimpleName() +
+                                 " resource of the patient that you are subscribed to has been added or updated.";  
+
+                // endpoint is in the form: "tel:+1555-345-5555"
+                String[] endpointParts = destinationChannel.getEndpoint().split(":");
+
+                PublishRequest request = PublishRequest.builder()
+                .message(message)
+                .phoneNumber(endpointParts[1])
+                .build();
+
+                LOGGER.info("Sending sms...");
+                PublishResponse result = snsClient.publish(request);
+                LOGGER.info(result.messageId() + " Message sent. Status was " + result.sdkHttpResponse().statusCode());
+
+                snsClient.close();
+
+            } catch (SnsException  e) {
+                LOGGER.warn("Error sending sms via sns: " + e.awsErrorDetails().errorMessage());
+            }
+            catch (RuntimeException e) {
+                LOGGER.warn("Error sending sms on error channel: " + e.getMessage());
             }
         }
     }
