@@ -69,8 +69,9 @@
             path="/subscription"
             supported-methods="POST"
             request-payload-type="java.lang.String"
-            error-channel="errorChannel"
-    />
+            error-channel="errorChannel">
+                   <int-http:header name="source" expression="#requestParams['source']"/>
+        </int-http:inbound-gateway>
 
     <int:service-activator
             id="subscriptionManagerServiceRegisterSubscriptionActivator"

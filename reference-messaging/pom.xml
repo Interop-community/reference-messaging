@@ -92,6 +92,18 @@
             <version>${hapi.version}</version>
         </dependency>
 
+        <dependency>
+        <groupId>ca.uhn.hapi</groupId>
+        <artifactId>hapi-base</artifactId>
+        <version>2.3</version>
+        </dependency>
+        <!-- FHIR R4 Structures Jar added by Chit -->
+        <!-- <dependency>
+            <groupId>ca.uhn.hapi.fhir</groupId>
+            <artifactId>hapi-fhir-structures-r4</artifactId>
+            <version>6.1.0</version>
+        </dependency> -->
+
         <!-- tag::actuator[] -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -174,7 +186,7 @@
             <artifactId>sts</artifactId>
             <version>2.20.45</version>
         </dependency>
-        
+
     </dependencies>
 
     <build>

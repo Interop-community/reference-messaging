@@ -6,9 +6,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class RuleFromSubscriptionFactory {
 
-    public String create(Subscription subscription) {
+    private String fhirbaseUrl;
+
+    public String create(Subscription subscription, String src) {
         // extract the resource from the criteria
         String resource = getResourceFromCriteria(subscription.getCriteria());
+        this.fhirbaseUrl = src;
 
         switch (resource) {
             case "Patient":
@@ -17,6 +20,8 @@ public class RuleFromSubscriptionFactory {
                 return createObservationDroolsRule(subscription);
             case "CarePlan":
                 return createCarePlanDroolsRule(subscription);
+            case "Encounter":
+                return createEncounterDroolsRule(subscription);
             default:
                 throw new RuntimeException("Unsupported resource for criteria: " + subscription.getCriteria());
         }
@@ -74,9 +79,11 @@ public class RuleFromSubscriptionFactory {
         stringBuffer.append("dialect \"mvel\"\n");
         stringBuffer.append("import org.hspconsortium.platform.messaging.model.ResourceRoutingContainer\n");
         stringBuffer.append("import org.hspconsortium.platform.messaging.model.ObservationRoutingContainer\n");
-        stringBuffer.append("rule \"Subscription rule: " + subscription.getId() + "\"\n");
+        stringBuffer.append("rule \"Subscription rule: " + fhirbaseUrl + "/" + subscription.getId()  + "\"\n");
         stringBuffer.append("    when\n");
         stringBuffer.append("        $c: ObservationRoutingContainer(\n");
+        stringBuffer.append("              getSource() == \"" + fhirbaseUrl + "\"\n");
+
         // todo this hard-coding is just for the demo
         if (codeOption != null) {
             stringBuffer.append("              getObservation().getCode() != null\n");
@@ -91,6 +98,8 @@ public class RuleFromSubscriptionFactory {
         stringBuffer.append("            \"" + subscription.getChannel().getPayload() + "\",\n");
         stringBuffer.append("            \"" + subscription.getChannel().getHeader() + "\")\n");
         stringBuffer.append("end\n");
+        System.out.println(stringBuffer.toString());
+
         return stringBuffer.toString();
     }
 
@@ -115,6 +124,37 @@ public class RuleFromSubscriptionFactory {
         stringBuffer.append("            \"" + subscription.getChannel().getPayload() + "\",\n");
         stringBuffer.append("            \"" + subscription.getChannel().getHeader() + "\")\n");
         stringBuffer.append("end\n");
+
+        System.out.println(stringBuffer.toString());
+
+        return stringBuffer.toString();
+    }
+
+
+    private String createEncounterDroolsRule(Subscription subscription) {
+        // create a drl based on the subscription
+        String codeOption = getCriteria("code", getCriteriaOptions(subscription.getCriteria()));
+
+        // todo add support for actual criteria
+        StringBuffer stringBuffer = new StringBuffer();
+        stringBuffer.append("package org.hspconsortium.platform.messaging\n");
+        stringBuffer.append("dialect \"mvel\"\n");
+        stringBuffer.append("import org.hspconsortium.platform.messaging.model.ResourceRoutingContainer\n");
+        stringBuffer.append("import org.hspconsortium.platform.messaging.model.EncounterRoutingContainer\n");
+        stringBuffer.append("rule \"Subscription rule: " + fhirbaseUrl + "/" + subscription.getId() + "\"\n");
+        stringBuffer.append("    when\n");
+        stringBuffer.append("        $c: EncounterRoutingContainer(\n");
+        stringBuffer.append("              getSource() == \"" + fhirbaseUrl + "\"\n");
+        stringBuffer.append("            )\n");
+        stringBuffer.append("    then\n");
+        stringBuffer.append("        $c.addDestinationChannel(\n");
+        stringBuffer.append("            \"" + subscription.getChannel().getType().toString() + "\",\n");
+        stringBuffer.append("            \"" + subscription.getChannel().getEndpoint() + "\",\n");
+        stringBuffer.append("            \"" + subscription.getChannel().getPayload() + "\",\n");
+        stringBuffer.append("            \"" + subscription.getChannel().getHeader() + "\")\n");
+        stringBuffer.append("end\n");
+        System.out.println(stringBuffer.toString());
+        
         return stringBuffer.toString();
     }
 

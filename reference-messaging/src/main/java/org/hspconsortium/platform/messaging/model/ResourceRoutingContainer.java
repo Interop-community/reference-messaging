@@ -3,6 +3,8 @@ package org.hspconsortium.platform.messaging.model;
 import org.hl7.fhir.dstu3.model.StringType;
 import org.hl7.fhir.dstu3.model.Subscription;
 import org.hl7.fhir.instance.model.api.IDomainResource;
+import ca.uhn.fhir.context.FhirContext;
+import ca.uhn.fhir.rest.client.IGenericClient;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -11,6 +13,8 @@ import java.util.List;
 public abstract class ResourceRoutingContainer {
 
     protected Date now;
+
+    // public FhirContext ctx = FhirContext.forR4();
 
     private List<Subscription.SubscriptionChannelComponent> destinationChannels = new ArrayList<>();
 
@@ -36,4 +40,10 @@ public abstract class ResourceRoutingContainer {
     }
 
     public abstract IDomainResource getResource();
+
+    // public IGenericClient getFhirClient(String baseUrl){
+
+    //     return ctx.newRestfulGenericClient(baseUrl);
+
+    // }
 }

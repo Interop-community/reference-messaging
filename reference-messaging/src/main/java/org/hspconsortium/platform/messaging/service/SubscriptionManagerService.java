@@ -8,9 +8,9 @@ public interface SubscriptionManagerService {
 
     String asString();
 
-    String registerSubscription(String subscriptionStr);
+    String registerSubscription(String subscriptionStr, String source);
 
-    String submitResource(IDomainResource resource);
+    String submitResource(IDomainResource resource, String source);
 
     String reset();
 

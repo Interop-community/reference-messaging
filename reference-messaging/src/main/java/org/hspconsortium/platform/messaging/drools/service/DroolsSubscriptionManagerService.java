@@ -9,6 +9,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.hl7.fhir.dstu3.model.CarePlan;
+import org.hl7.fhir.dstu3.model.Encounter;
 import org.hl7.fhir.dstu3.model.Observation;
 import org.hl7.fhir.dstu3.model.Patient;
 import org.hl7.fhir.dstu3.model.StringType;
@@ -18,6 +19,7 @@ import org.hspconsortium.platform.messaging.controller.mail.EmailController;
 import org.hspconsortium.platform.messaging.converter.ResourceStringConverter;
 import org.hspconsortium.platform.messaging.drools.factory.RuleFromSubscriptionFactory;
 import org.hspconsortium.platform.messaging.model.CarePlanRoutingContainer;
+import org.hspconsortium.platform.messaging.model.EncounterRoutingContainer;
 import org.hspconsortium.platform.messaging.model.ObservationRoutingContainer;
 import org.hspconsortium.platform.messaging.model.PatientRoutingContainer;
 import org.hspconsortium.platform.messaging.model.ResourceRoutingContainer;
@@ -53,6 +55,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.integration.annotation.Header;
 
 import static org.hspconsortium.platform.messaging.controller.mail.EmailRestDemoClient.PNG_MIME;
 
@@ -103,9 +106,9 @@ public class DroolsSubscriptionManagerService implements SubscriptionManagerServ
     }
 
     @Override
-    public String registerSubscription(String subscriptionStr) {
+    public String registerSubscription(String subscriptionStr, @Header(value="source", required=false) String source) {
         Subscription subscription = (Subscription) resourceStringConverter.toResource(subscriptionStr);
-        String strDrl = ruleFromSubscriptionFactory.create(subscription);
+        String strDrl = ruleFromSubscriptionFactory.create(subscription, source);
 
         KnowledgeBuilder kbuilder = KnowledgeBuilderFactory.newKnowledgeBuilder();
         kbuilder.add(
@@ -132,15 +135,20 @@ public class DroolsSubscriptionManagerService implements SubscriptionManagerServ
         return "Ok";
     }
 
+
+
     @Override
-    public String submitResource(IDomainResource resource) {
+    public String submitResource(IDomainResource resource, String source) {
         ResourceRoutingContainer resourceRoutingContainer;
         if (resource instanceof Observation) {
-            resourceRoutingContainer = new ObservationRoutingContainer((Observation) resource);
+            resourceRoutingContainer = new ObservationRoutingContainer((Observation) resource, source);
         } else if (resource instanceof CarePlan) {
             resourceRoutingContainer = new CarePlanRoutingContainer((CarePlan) resource);
         } else if (resource instanceof Patient) {
             resourceRoutingContainer = new PatientRoutingContainer((Patient) resource);
+        } else if (resource instanceof Encounter) {
+            resourceRoutingContainer = new EncounterRoutingContainer((Encounter) resource,  source);
+            // System.out.println(((EncounterRoutingContainer) resourceRoutingContainer).getPatient());
         } else {
             return "Nothing to do";
         }
