@@ -12,6 +12,6 @@ public interface SubscriptionManagerService {
 
     String submitResource(IDomainResource resource, String source);
 
-    String reset();
+    String reset(String resourceUrl);
 
 }

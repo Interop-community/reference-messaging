@@ -56,7 +56,7 @@ public class RuleFromSubscriptionFactory {
         stringBuffer.append("dialect \"mvel\"\n");
         stringBuffer.append("import org.hspconsortium.platform.messaging.model.ResourceRoutingContainer\n");
         stringBuffer.append("import org.hspconsortium.platform.messaging.model.PatientRoutingContainer\n");
-        stringBuffer.append("rule \"Subscription rule: " + subscription.getId() + "\"\n");
+        stringBuffer.append("rule \"Subscription rule: " + fhirbaseUrl + "/" + subscription.getResourceType().toString() + "/" + subscription.getIdElement().getIdPart() + "\"\n");
         stringBuffer.append("    when\n");
         stringBuffer.append("        $c: PatientRoutingContainer()");
         stringBuffer.append("    then\n");
@@ -79,7 +79,7 @@ public class RuleFromSubscriptionFactory {
         stringBuffer.append("dialect \"mvel\"\n");
         stringBuffer.append("import org.hspconsortium.platform.messaging.model.ResourceRoutingContainer\n");
         stringBuffer.append("import org.hspconsortium.platform.messaging.model.ObservationRoutingContainer\n");
-        stringBuffer.append("rule \"Subscription rule: " + fhirbaseUrl + "/" + subscription.getId()  + "\"\n");
+        stringBuffer.append("rule \"Subscription rule: " + fhirbaseUrl + "/" + subscription.getResourceType().toString() + "/" + subscription.getIdElement().getIdPart() + "\"\n");
         stringBuffer.append("    when\n");
         stringBuffer.append("        $c: ObservationRoutingContainer(\n");
         stringBuffer.append("              getSource() == \"" + fhirbaseUrl + "\"\n");
@@ -113,7 +113,7 @@ public class RuleFromSubscriptionFactory {
         stringBuffer.append("dialect \"mvel\"\n");
         stringBuffer.append("import org.hspconsortium.platform.messaging.model.ResourceRoutingContainer\n");
         stringBuffer.append("import org.hspconsortium.platform.messaging.model.CarePlanRoutingContainer\n");
-        stringBuffer.append("rule \"Subscription rule: " + subscription.getId() + "\"\n");
+        stringBuffer.append("rule \"Subscription rule: " + fhirbaseUrl + "/" + subscription.getResourceType().toString() + "/" + subscription.getIdElement().getIdPart() + "\"\n");
         stringBuffer.append("    when\n");
         stringBuffer.append("        $c: CarePlanRoutingContainer(\n");
         stringBuffer.append("            )\n");
@@ -141,7 +141,7 @@ public class RuleFromSubscriptionFactory {
         stringBuffer.append("dialect \"mvel\"\n");
         stringBuffer.append("import org.hspconsortium.platform.messaging.model.ResourceRoutingContainer\n");
         stringBuffer.append("import org.hspconsortium.platform.messaging.model.EncounterRoutingContainer\n");
-        stringBuffer.append("rule \"Subscription rule: " + fhirbaseUrl + "/" + subscription.getId() + "\"\n");
+        stringBuffer.append("rule \"Subscription rule: " + fhirbaseUrl + "/" + subscription.getResourceType().toString() + "/" + subscription.getIdElement().getIdPart() + "\"\n");
         stringBuffer.append("    when\n");
         stringBuffer.append("        $c: EncounterRoutingContainer(\n");
         stringBuffer.append("              getSource() == \"" + fhirbaseUrl + "\"\n");

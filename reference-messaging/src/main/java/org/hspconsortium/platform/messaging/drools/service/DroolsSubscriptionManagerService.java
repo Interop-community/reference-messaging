@@ -40,8 +40,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
-
-import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.sns.SnsClient;
 import software.amazon.awssdk.services.sns.model.PublishRequest;
@@ -171,7 +169,15 @@ public class DroolsSubscriptionManagerService implements SubscriptionManagerServ
     }
 
     @Override
-    public String reset() {
+    public String reset(@Header(value="source", required=false) String source) {
+        if(source != null){
+            for (KnowledgePackage knowledgePackage : knowledgeBase.getKnowledgePackages()) {
+                if(knowledgeBase.getRule(knowledgePackage.getName(), "Subscription rule: " + source) != null)
+                    knowledgeBase.removeRule(knowledgePackage.getName(), "Subscription rule: " + source );
+            }
+
+            return "DELETED Subscription rule: " + source ;
+        }
         for (KnowledgePackage knowledgePackage : knowledgeBase.getKnowledgePackages()) {
             knowledgeBase.removeKnowledgePackage(knowledgePackage.getName());
         }
@@ -318,4 +324,7 @@ public class DroolsSubscriptionManagerService implements SubscriptionManagerServ
         return null;
     }
 
+
 }
+
+

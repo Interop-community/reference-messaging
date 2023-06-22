@@ -27,8 +27,9 @@
             request-channel="inboundSubscriptionRouterChannel"
             path="/subscription"
             supported-methods="GET,DELETE"
-            error-channel="errorChannel"
-    />
+            error-channel="errorChannel">
+               <int-http:header name="source" expression="#requestParams['source']"/>
+    </int-http:inbound-gateway>
 
     <int:router
             input-channel="inboundSubscriptionRouterChannel"
